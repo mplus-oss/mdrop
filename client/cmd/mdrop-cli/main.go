@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	serviceGet "github.com/mplus-oss/mdrop/internal/service_get"
 )
 
 func main() {
@@ -10,7 +12,7 @@ func main() {
 	cmdList.list["get"] = CommandListStructure{
 		name: "get",
 		desc: "Get file from target server",
-		start: StartGetCommand,
+		start: serviceGet.StartGetService,
 	}
 	cmdList.list["transfer"] = CommandListStructure{
 		name: "transfer",

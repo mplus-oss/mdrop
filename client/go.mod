@@ -1,4 +1,4 @@
-module github.com/mplus-oss/mdrop/mdrop-cli
+module github.com/mplus-oss/mdrop
 
 go 1.22.5
 
