@@ -3,11 +3,14 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
 
 	serviceGet "github.com/mplus-oss/mdrop/internal/service_get"
 )
 
 func main() {
+	fmt.Println(runtime.GOOS)
+	fmt.Println(runtime.GOARCH)
 	cmdList := NewCommandList()
 	cmdList.list["get"] = CommandListStructure{
 		name: "get",
