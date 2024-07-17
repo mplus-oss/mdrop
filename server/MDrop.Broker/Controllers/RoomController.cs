@@ -1,3 +1,4 @@
+using MDrop.Broker.Controllers.Middlewares;
 using MDrop.Broker.Functions;
 using MDrop.Broker.DataStructures;
 using System.ComponentModel.DataAnnotations;
@@ -10,8 +11,7 @@ using JWT.Builder;
 using JWT.Exceptions;
 
 namespace MDrop.Broker.Controllers;
-[ApiController]
-[Route("/room")]
+[ApiController, Route("/room"), MiddlewareFilter<VerifyPrivateModeTokenPipeline>]
 public class RoomController : Controller
 {
     [HttpPost("create")]
