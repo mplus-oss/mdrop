@@ -1,7 +1,9 @@
 using MDrop.Broker.Functions;
 using MDrop.Broker.DataStructures;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using JWT.Algorithms;
 using JWT.Builder;
 
@@ -12,16 +14,10 @@ public class RoomController : Controller
 {
     [HttpPost("create")]
     public ActionResult CreateRoom(
-        [FromQuery] int port,
+        [FromQuery, BindRequired, Range(1_024, 59_999)] int port,
         [FromQuery] int durationInHours = 3)
     {
         var response = new RoomReturnJson();
-
-        if (port < 1024 && port > 59_999)
-        {
-            response.Message = "Port must be on range 1024-59999";
-            return BadRequest(response);
-        }
 
         try
         {
@@ -50,6 +46,7 @@ public class RoomController : Controller
         public string Message { get; set; } = "";
 
         [JsonPropertyName("token")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string? Token { get; set; }
     }
 }
