@@ -28,6 +28,7 @@
     <TrimMode>full</TrimMode>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="JWT" Version="10.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
   </ItemGroup>
 

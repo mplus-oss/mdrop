@@ -6,7 +6,6 @@ namespace MDrop.Broker.Controllers;
 [Route("/verify")]
 public class VerifyController : Controller
 {
-    [HttpPost]
     public ActionResult<VerifyReturnJson> VerifyClientOnPrivateMode([FromQuery] string token)
     {
         var response = new VerifyReturnJson();
@@ -31,5 +30,4 @@ public class VerifyController : Controller
         [JsonPropertyName("message")]
         public string Message { get; set; } = "";
     }
-
 }
