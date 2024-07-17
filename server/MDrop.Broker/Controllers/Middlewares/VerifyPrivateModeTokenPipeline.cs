@@ -1,4 +1,4 @@
-using System.Text.Json;
+using MDrop.Broker.Functions;
 using System.Text.Json.Serialization;
 
 namespace MDrop.Broker.Controllers.Middlewares;
@@ -10,8 +10,7 @@ public class VerifyPrivateModeTokenPipeline
         {
             var response = new VerifyReturnJson();
 
-            var privToken = Constant.PrivateModeToken;
-            if (privToken == "") 
+            if (Constant.PrivateModeToken == "") 
             {
                 await next();
                 return;
@@ -21,20 +20,21 @@ public class VerifyPrivateModeTokenPipeline
             var tokenArr = token.ToString().Split(' ');
             if (tokenArr.Length == 1)
             {
-                context.Response.ContentType = "application/json";
-                context.Response.StatusCode = 401;
                 response.Message = "Authorization needed.";
-                await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+                await CustomContentResult.JsonCustomContextResult(context, 401, response);
                 return;
             }
 
-            token = tokenArr[1];
-            if (token != privToken)
+            if (tokenArr[0].ToLower() != "bearer")
             {
-                context.Response.ContentType = "application/json";
-                context.Response.StatusCode = 401;
+                response.Message = "Authorization invalid.";
+                await CustomContentResult.JsonCustomContextResult(context, 401, response);
+                return;
+            }
+            if (tokenArr[1] != Constant.PrivateModeToken)
+            {
                 response.Message = "Token is invalid.";
-                await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+                await CustomContentResult.JsonCustomContextResult(context, 401, response);
                 return;
             }
 
