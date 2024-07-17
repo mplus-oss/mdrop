@@ -25,6 +25,9 @@ public class Program
      */
     public WebApplication ConfigureServiceBuilder(ref WebApplicationBuilder builder)
     {
+        // Add Controller Path
+        builder.Services.AddControllers();
+
         // Logger
         builder.Services.AddLogging(logger =>
             logger.AddSimpleConsole(options => {
@@ -43,7 +46,7 @@ public class Program
     public static void ConfigureMiddleware(ref WebApplication app)
     {
         app.UseRouting();
-        //app.MapControllers();
+        app.MapControllers();
 
         // Health Check
         app.MapGet("/", async context =>
