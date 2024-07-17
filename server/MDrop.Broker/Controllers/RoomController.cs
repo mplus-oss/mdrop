@@ -36,7 +36,7 @@ public class RoomController : Controller
         catch (Exception e)
         {
             response.Message = e.Message;
-            return CustomContentResult.JsonCustomResult(432, response);
+            return CustomContentResult.JsonCustomResult(500, response);
         }
     }
 
