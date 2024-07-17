@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace MDrop.Broker.Controllers;
-[ApiController]
-[Route("/verify")]
+[ApiController, Route("/verify")]
 public class VerifyController : Controller
 {
     public ActionResult<VerifyReturnJson> VerifyClientOnPrivateMode(
