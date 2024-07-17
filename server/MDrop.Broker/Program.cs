@@ -25,6 +25,14 @@ public class Program
      */
     public WebApplication ConfigureServiceBuilder(ref WebApplicationBuilder builder)
     {
+        // Logger
+        builder.Services.AddLogging(logger =>
+            logger.AddSimpleConsole(options => {
+                options.SingleLine = true;
+                options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+            })
+        );
+
         // Insert singleton if needed
         return builder.Build();
     }
