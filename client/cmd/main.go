@@ -6,9 +6,8 @@ import (
 	"os"
 )
 
-const helpMeesage string = `Command: mdrop <command> [options]
-
-Usage of mdrop:
+const subCmdHelpMeesage string = `
+Subcommand:
   auth [--url=uri] [--token=random_string]
     subcommand
         Authenticate client to broker server
@@ -25,19 +24,17 @@ func main() {
 
 	args := flag.Args()
 	if len(os.Args) == 1 {
-		fmt.Println(helpMeesage)
-		os.Exit(1)
+		printUsage()
 	}
 
 	if *help {
-		fmt.Println(helpMeesage)
-		os.Exit(1)
+		printUsage()
 	}
 
 	cmd, args := args[0], args[1:]
 	switch(cmd) {
 	case "auth":
-		fmt.Println("Not implemented")
+		AuthCommand(args)
 		os.Exit(1)
 	case "get":
 		fmt.Println("Not implemented")
@@ -46,18 +43,13 @@ func main() {
 		fmt.Println("Not implemented")
 		os.Exit(1)
 	default:
-		fmt.Println(helpMeesage)
-		os.Exit(1)
+		printUsage()
 	}
 }
 
-// For references
-func subCommand(args []string) {
-	flag := flag.NewFlagSet("mdrop sb", flag.ExitOnError)
-	var (
-		url = flag.String("url", "https://example.com", "URL of broker")
-	)
-	flag.Parse(args)
-
-	fmt.Println(*url)
+func printUsage() {
+	fmt.Print("Command: mdrop <command> [options]\n\n")
+	flag.Usage()
+	fmt.Println(subCmdHelpMeesage)
+	os.Exit(1)
 }
