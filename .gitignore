@@ -1,0 +1,15 @@
+.env
+.env.deploy
+.vimsession
+.vs
+
+# Certificate on testing
+**/*.pem
+
+# Generated project files by .NET
+**/obj/**
+**/bin/**
+**/Properties/**
+
+# Development Generated Data
+.devel-data/
