@@ -1,32 +1,63 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 )
 
+const helpMeesage string = `Command: mdrop <command> [options]
+
+Usage of mdrop:
+  auth [--url=uri] [--token=random_string]
+    subcommand
+        Authenticate client to broker server
+  get
+    subcommand
+        Create instance for retriving file from sender
+  send
+    subcommand
+        Send file to reciever instance`
+
 func main() {
-	cmdList := NewCommandList()
-	cmdList.list["auth"] = CommandListStructure{
-		desc: "Get file from target server",
-		start: func () {
-			fmt.Println("Not implemented")
-		},
-	}
+	help := flag.Bool("help", false, "Print this message")
+	flag.Parse()
 
-	args := os.Args
-	if len(args) <= 1 {
-		fmt.Println("No command provided.")
-		cmdList.PrintUsageCommand()
+	args := flag.Args()
+	if len(os.Args) == 1 {
+		fmt.Println(helpMeesage)
 		os.Exit(1)
 	}
 
-	subCommand := &args[1]
-	if !cmdList.IsCommandAvailable(*subCommand) {
-		fmt.Print(fmt.Sprintf("No command available for \"%s\".\n\n", *subCommand))
-		cmdList.PrintUsageCommand()
+	if *help {
+		fmt.Println(helpMeesage)
 		os.Exit(1)
 	}
 
-	cmdList.list[*subCommand].start()
+	cmd, args := args[0], args[1:]
+	switch(cmd) {
+	case "auth":
+		fmt.Println("Not implemented")
+		os.Exit(1)
+	case "get":
+		fmt.Println("Not implemented")
+		os.Exit(1)
+	case "send":
+		fmt.Println("Not implemented")
+		os.Exit(1)
+	default:
+		fmt.Println(helpMeesage)
+		os.Exit(1)
+	}
+}
+
+// For references
+func subCommand(args []string) {
+	flag := flag.NewFlagSet("mdrop sb", flag.ExitOnError)
+	var (
+		url = flag.String("url", "https://example.com", "URL of broker")
+	)
+	flag.Parse(args)
+
+	fmt.Println(*url)
 }
