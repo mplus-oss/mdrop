@@ -6,6 +6,7 @@ namespace MDrop.Broker.Controllers;
 [ApiController, Route("/verify")]
 public class VerifyController : Controller
 {
+    [HttpPost]
     public ActionResult<VerifyReturnJson> VerifyClientOnPrivateMode(
         [FromQuery, BindRequired] string token)
     {

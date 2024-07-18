@@ -9,9 +9,6 @@ public class Program
         // Add services to the container
         var app = ConfigureServiceBuilder(ref builder);
 
-        // Configure the HTTP request pipeline
-        if (!app.Environment.IsDevelopment()) ConfigureDevelopmentRequestPipeline(ref app);
-
         // Set middleware
         ConfigureMiddleware(ref app);
 
@@ -47,19 +44,12 @@ public class Program
     {
         app.UseRouting();
         app.MapControllers();
+        app.UseExceptionHandler("/error");
 
         // Health Check
         app.MapGet("/", async context =>
         {
             await context.Response.WriteAsJsonAsync(new { Message = "Hello world!" });
         });
-    }
-
-    /**
-     * Configure exception request pipeline.
-     */
-    public void ConfigureDevelopmentRequestPipeline(ref WebApplication app)
-    {
-        app.UseExceptionHandler("/error");
     }
 }
