@@ -16,7 +16,7 @@ public class RoomController : Controller
 {
     [HttpPost("create")]
     public ActionResult CreateRoom(
-        [FromQuery, BindRequired, Range(1_024, 59_999)] int port,
+        [FromQuery, BindRequired, Range(10_000, 59_999)] int port,
         [FromQuery] int durationInHours = 3)
     {
         var response = new RoomReturnJson();
