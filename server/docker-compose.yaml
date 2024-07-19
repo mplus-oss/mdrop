@@ -1,0 +1,10 @@
+# This docker compose for developing image tunnel
+
+services:
+  mdrop_broker:
+    container_name: mdrop_broker
+    build:
+      context: .
+    restart: unless-stopped
+    ports:
+      - 5000:5000
