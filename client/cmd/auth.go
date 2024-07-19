@@ -13,15 +13,19 @@ import (
 func AuthCommand(args []string) {
 	flag := flag.NewFlagSet("mdrop auth", flag.ExitOnError)
 	var (
-		url = flag.String("url", "https://example.com", "URL of broker")
-		token = flag.String("token", "token-is-here", "Private key token if the broker is on private mode")
+		url   = flag.String("url", "https://example.com", "URL of broker")
+		token = flag.String("token", "", "Private key token if the broker is on private mode")
 	)
 	flag.Parse(args)
+
+	if *token == "" {
+		*token = "token"
+	}
 
 	var client = &http.Client{}
 
 	fmt.Println("Authenticating...")
-	req, err := http.NewRequest("POST", *url + "/verify?token=" + *token, nil)
+	req, err := http.NewRequest("POST", *url+"/verify?token="+*token, nil)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -56,8 +60,8 @@ func AuthCommand(args []string) {
 		*token = ""
 	}
 
-	config := internal.ConfigFile {
-		URL: *url,
+	config := internal.ConfigFile{
+		URL:   *url,
 		Token: *token,
 	}
 	err = config.WriteConfig()
@@ -71,9 +75,9 @@ func AuthCommand(args []string) {
 }
 
 type VerifyJSONReturn struct {
-	Message		 string `json:"message"`
-	IsPublic	 bool	`json:"isPublic"`
+	Message  string `json:"message"`
+	IsPublic bool   `json:"isPublic"`
 
 	// This respon fired when the API is failed
-	ErrorTitle	 string `json:"title"`
+	ErrorTitle string `json:"title"`
 }
