@@ -37,10 +37,28 @@ func AuthCommand(args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Println(res.StatusCode)
-	fmt.Println(verifyData.Message)
+	if res.StatusCode != 200 {
+		var msg string
+		if verifyData.ErrorTitle == "" {
+			msg = verifyData.Message
+		} else {
+			msg = verifyData.ErrorTitle
+		}
+		fmt.Println("Error:", msg)
+		os.Exit(1)
+	}
+	if verifyData.IsPublic {
+		fmt.Println("This broker is running on public mode.")
+	}
+
+	fmt.Println("Authenticated!")
+	os.Exit(0)
 }
 
 type VerifyJSONReturn struct {
-	Message string `json:"message"`
+	Message		 string `json:"message"`
+	IsPublic	 bool	`json:"isPublic"`
+
+	// This respon fired when the API is failed
+	ErrorTitle	 string `json:"title"`
 }
