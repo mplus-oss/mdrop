@@ -1,20 +1,15 @@
 package main
 
 import (
-	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"math/rand/v2"
-	"net/http"
 	"os"
-	"strconv"
 
-	"github.com/labstack/echo/v4"
 	internal "github.com/mplus-oss/mdrop/client/internal"
 )
 
-var errGlobal chan error = make(chan error)
+var errGetGlobal chan error = make(chan error)
 
 func GetCommand(args []string) {
 	flag := flag.NewFlagSet("mdrop get", flag.ExitOnError)
@@ -60,57 +55,11 @@ func GetCommand(args []string) {
 
 	fmt.Println(roomData.Token)
 
-	err = <- errGlobal
+	err = <- errGetGlobal
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-}
-
-func createWebserver(port int) {
-	e := echo.New()
-	e.HideBanner = true
-	e.HidePort = true
-	
-	e.GET("/receive", func (c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{
-			"message": "ok",
-		})
-	})
-
-	e.Logger.Fatal(e.Start("0.0.0.0:"+strconv.Itoa(port)))
-	errGlobal <- errors.New("Webserver Closed")
-}
-
-func getToken(path string) (CreateRoomJSONReturn, error) {
-	var client = &http.Client{}
-	req, err := http.NewRequest("POST", path, nil)
-	if err != nil {
-		return CreateRoomJSONReturn{} ,err
-	}
-	res, err := client.Do(req)
-	if err != nil {
-		return CreateRoomJSONReturn{} ,err
-	}
-	defer res.Body.Close()
-
-	var roomData CreateRoomJSONReturn
-	err = json.NewDecoder(res.Body).Decode(&roomData)
-	if err != nil {
-		return CreateRoomJSONReturn{} ,err
-	}
-
-	return roomData, nil
-}
-
-type CreateRoomJSONReturn struct {
-	Token string `json:"token"`
-
-	// This respon fired when the API is failed
-	ErrorTitle string `json:"title"`
-	Errors     struct {
-		Port []string `json:"port"`
-	} `json:"errors"`
 }
 
 func randRange(min, max int) int {
