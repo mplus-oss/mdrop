@@ -1,12 +1,13 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
+
+	internal "github.com/mplus-oss/mdrop/client/internal"
 )
 
 func AuthCommand(args []string) {
@@ -19,6 +20,7 @@ func AuthCommand(args []string) {
 
 	var client = &http.Client{}
 
+	fmt.Println("Authenticating...")
 	req, err := http.NewRequest("POST", *url + "/verify?token=" + *token, nil)
 	if err != nil {
 		fmt.Println(err)
@@ -49,17 +51,22 @@ func AuthCommand(args []string) {
 		os.Exit(1)
 	}
 
-	base64Url := base64.StdEncoding.EncodeToString([]byte(*url))
-	base64Token := ""
 	if verifyData.IsPublic {
 		fmt.Println("This broker is running on public mode.")
-	} else {
-		base64Token = base64.StdEncoding.EncodeToString([]byte(*token))
+		*token = ""
+	}
+
+	config := internal.ConfigFile {
+		URL: *url,
+		Token: *token,
+	}
+	err = config.WriteConfig()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	fmt.Println("Authenticated!")
-	fmt.Println(base64Url)
-	fmt.Println(base64Token)
 	os.Exit(0)
 }
 
