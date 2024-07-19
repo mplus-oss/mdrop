@@ -1,5 +1,5 @@
 #!/bin/sh
-set -ex
+set -e
 
 # Set PWD to /app
 cd /app
@@ -15,4 +15,4 @@ openssl req -new -x509 -key prikey.pem -out cert.pem -days 365 \
   -subj "/CN=mplus.software/OU=Mplus Software/O=Mplus DevOps Team/L=South Jakarta/ST=Greater Jakarta/C=ID"
 
 # Launch the app
-dotnet run -c Release --project MDrop.Broker
+/app/MDrop.Broker
