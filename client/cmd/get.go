@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"math/rand/v2"
@@ -9,14 +10,18 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/labstack/echo/v4"
 	internal "github.com/mplus-oss/mdrop/client/internal"
 )
+
+var errGlobal chan error = make(chan error)
 
 func GetCommand(args []string) {
 	flag := flag.NewFlagSet("mdrop get", flag.ExitOnError)
 	var (
-		expired = flag.Int("expired", 3, "Expired timeout in hours.")
-		port    = flag.Int("port", 0, "Specified port on broker. Range of port is about 10k - 59k. (default rand(10000, 59999))")
+		expired	  = flag.Int("expired", 3, "Expired timeout in hours.")
+		port	  = flag.Int("port", 0, "Specified port on broker. Range of port is about 10k - 59k. (default rand(10000, 59999))")
+		localPort = flag.Int("localPost", 6000, "Specified port on local.")
 	)
 	flag.Parse(args)
 
@@ -35,29 +40,67 @@ func GetCommand(args []string) {
 		os.Exit(1)
 	}
 
-	var client = &http.Client{}
-	fmt.Println("Creating the room...")
-	var pathStr = c.URL+"/room/create?durationInHours="+strconv.Itoa(*expired)+"&port="+strconv.Itoa(*port)
-	req, err := http.NewRequest("POST", pathStr, nil)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer res.Body.Close()
+	fmt.Print("Creating the room...\n\n")
 
-	var roomData CreateRoomJSONReturn
-	err = json.NewDecoder(res.Body).Decode(&roomData)
+	// Start the Echo server
+	go createWebserver(*localPort)
+
+	// Get token data
+	var path = fmt.Sprintf(
+		"%v/room/create?durationInHours=%v&port=%v",
+		c.URL,
+		*expired,
+		*port,
+	)
+	roomData, err := getToken(path)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
 	fmt.Println(roomData.Token)
+
+	err = <- errGlobal
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func createWebserver(port int) {
+	e := echo.New()
+	e.HideBanner = true
+	e.HidePort = true
+	
+	e.GET("/receive", func (c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]string{
+			"message": "ok",
+		})
+	})
+
+	e.Logger.Fatal(e.Start("0.0.0.0:"+strconv.Itoa(port)))
+	errGlobal <- errors.New("Webserver Closed")
+}
+
+func getToken(path string) (CreateRoomJSONReturn, error) {
+	var client = &http.Client{}
+	req, err := http.NewRequest("POST", path, nil)
+	if err != nil {
+		return CreateRoomJSONReturn{} ,err
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return CreateRoomJSONReturn{} ,err
+	}
+	defer res.Body.Close()
+
+	var roomData CreateRoomJSONReturn
+	err = json.NewDecoder(res.Body).Decode(&roomData)
+	if err != nil {
+		return CreateRoomJSONReturn{} ,err
+	}
+
+	return roomData, nil
 }
 
 type CreateRoomJSONReturn struct {
@@ -68,10 +111,6 @@ type CreateRoomJSONReturn struct {
 	Errors     struct {
 		Port []string `json:"port"`
 	} `json:"errors"`
-}
-
-func gatherToken() string {
-	return ""
 }
 
 func randRange(min, max int) int {
