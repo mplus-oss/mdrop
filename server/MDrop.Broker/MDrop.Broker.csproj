@@ -21,9 +21,6 @@
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
-    <PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
 
   <ItemGroup>
