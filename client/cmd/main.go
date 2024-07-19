@@ -37,7 +37,7 @@ func main() {
 		AuthCommand(args)
 		os.Exit(1)
 	case "get":
-		fmt.Println("Not implemented")
+		GetCommand(args)
 		os.Exit(1)
 	case "send":
 		fmt.Println("Not implemented")
