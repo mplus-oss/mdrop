@@ -14,7 +14,8 @@ public class VerifyController : Controller
         if (Constant.PrivateModeToken == "")
         {
             response.Message = "This broker is public mode. Refusing.";
-            return BadRequest(response);
+            response.IsPublic = true;
+            return Ok(response);
         }
 
         if (Constant.PrivateModeToken != token)
@@ -31,5 +32,8 @@ public class VerifyController : Controller
     {
         [JsonPropertyName("message")]
         public string Message { get; set; } = "";
+
+        [JsonPropertyName("isPublic")]
+        public bool IsPublic { get; set; } = false;
     }
 }
