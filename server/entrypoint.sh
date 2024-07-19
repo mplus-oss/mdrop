@@ -1,4 +1,8 @@
 #!/bin/sh
+set -ex
+
+# Set PWD to /app
+cd /app
 
 # Generate RS2048A Private Key
 openssl genrsa -out prikey.pem 2048
@@ -10,5 +14,5 @@ openssl rsa -in prikey.pem -pubout -out pubkey.pem
 openssl req -new -x509 -key prikey.pem -out cert.pem -days 365 \
   -subj "/CN=mplus.software/OU=Mplus Software/O=Mplus DevOps Team/L=South Jakarta/ST=Greater Jakarta/C=ID"
 
-# Move the cert.pem on development folder
-mv *pem ./MDrop.Broker
+# Launch the app
+dotnet run -c Release --project MDrop.Broker
