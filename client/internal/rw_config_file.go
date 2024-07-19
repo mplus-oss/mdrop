@@ -50,20 +50,20 @@ func (c ConfigFile) WriteConfig() error {
 	return nil
 }
 
-func (c ConfigFile) ParseConfig() (ConfigFile, error) {
+func (c ConfigFile) ParseConfig(conf* ConfigFile) (error) {
 	var urlByte, tokenByte []byte
 
 	if !CheckConfigFileExist() {
-		return c, errors.New("No config file on local. Please log in first.")
+		return errors.New("No config file on local. Please log in first.")
 	}
 	file, err := os.ReadFile(ConfigFileLocation)
 	if err != nil {
-		return c, err
+		return err
 	}
 
 	fileSplit := strings.Split(string(file), " ")
 	if len(fileSplit) == 0 && len(fileSplit) > 2 {
-		return c, errors.New("Invalid config file. Please log in again.")
+		return errors.New("Invalid config file. Please log in again.")
 	}
 
 	urlByte, err = base64.StdEncoding.DecodeString(fileSplit[0])
@@ -73,13 +73,13 @@ func (c ConfigFile) ParseConfig() (ConfigFile, error) {
 		tokenByte = []byte("")
 	}
 	if err != nil {
-		return c, err
+		return err
 	}
 
-	c.URL = string(urlByte)
-	c.Token = string(tokenByte)
+	conf.URL = string(urlByte)
+	conf.Token = string(tokenByte)
 
-	return c, nil
+	return nil
 }
 
 func GetConfigPath() string {
