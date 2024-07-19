@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -47,11 +48,18 @@ func AuthCommand(args []string) {
 		fmt.Println("Error:", msg)
 		os.Exit(1)
 	}
+
+	base64Url := base64.StdEncoding.EncodeToString([]byte(*url))
+	base64Token := ""
 	if verifyData.IsPublic {
 		fmt.Println("This broker is running on public mode.")
+	} else {
+		base64Token = base64.StdEncoding.EncodeToString([]byte(*token))
 	}
 
 	fmt.Println("Authenticated!")
+	fmt.Println(base64Url)
+	fmt.Println(base64Token)
 	os.Exit(0)
 }
 
