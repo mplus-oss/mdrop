@@ -6,5 +6,9 @@ services:
     build:
       context: .
     restart: unless-stopped
+    environment:
+      PRIVATE_MODE_TOKEN: ""
+      TUNNEL_HOST: 127.0.0.1
+      TUNNEL_PORT: 2222
     ports:
       - 5000:5000
