@@ -11,7 +11,7 @@ type CreateRoomJSONReturn struct {
 	// This respon fired when the API is failed
 	ErrorTitle string `json:"title"`
 	Errors     struct {
-		Port []string `json:"port"`
+		Token []string `json:"token"`
 	} `json:"errors"`
 }
 

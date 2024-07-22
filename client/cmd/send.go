@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -38,41 +37,11 @@ func SendCommand(args []string) {
 		os.Exit(1)
 	}
 
-	// Decrypt token first
-	client := &http.Client{}
-	path := fmt.Sprintf(
-		"%v/room/join?token=%v",
-		c.URL,
-		*token,
-	)
+	// Authenticating
 	fmt.Println("Authenticating...")
-	req, err := http.NewRequest("POST", path, nil)
+	joinData, err := sendToken(c, *token)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
-	}
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer res.Body.Close()
-
-	var joinData JoinJSONReturn
-	err = json.NewDecoder(res.Body).Decode(&joinData)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	if res.StatusCode != 200 {
-		var msg string
-		if joinData.ErrorTitle == "" {
-			msg = joinData.Message
-		} else {
-			msg = joinData.ErrorTitle
-		}
-		fmt.Println("Error:", msg)
 		os.Exit(1)
 	}
 
@@ -103,12 +72,4 @@ func uploadFile(uri string, path string) (*http.Request, error) {
 	req, err := http.NewRequest("POST", uri, body)
 	req.Header.Set("Content-Type", "")
 	return req, err
-}
-
-type JoinJSONReturn struct {
-	Message  string `json:"message"`
-	Port	 int	`json:"port"`
-
-	// This respon fired when the API is failed
-	ErrorTitle string `json:"title"`
 }
