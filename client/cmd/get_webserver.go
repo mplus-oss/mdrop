@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/schollz/progressbar/v3"
 )
 
 func createWebserver(port int, token string) {
@@ -62,15 +63,12 @@ func createWebserver(port int, token string) {
 		defer dst.Close()
 
 		// Copy file
-		pr := &Progress{
-			TotalSize: file.Size,
-		}
-		if _, err = io.Copy(dst, io.TeeReader(src, pr)); err != nil {
+		bar := progressbar.DefaultBytes(file.Size, file.Filename)
+		if _, err = io.Copy(io.MultiWriter(dst, bar), src); err != nil {
 			return validateInternalError(c, err)
 		}
 
 		// Complete
-		fmt.Println(file.Filename, "successfully transferred!")
 		return c.JSON(http.StatusOK, map[string]string{
 			"message": "ok",
 		})
@@ -78,28 +76,6 @@ func createWebserver(port int, token string) {
 
 	e.Logger.Fatal(e.Start("0.0.0.0:"+strconv.Itoa(port)))
 	errGetGlobal <- errors.New("Webserver Closed")
-}
-
-type Progress struct {
-	TotalSize int64
-	BytesRead int64
-}
-
-// Aggregating length of upload progress on io.Writer instance.
-func (pr *Progress) Write(p []byte) (n int, err error) {
-	n, err = len(p), nil
-	pr.BytesRead += int64(n)
-	pr.Print()
-	return
-}
-
-func (pr *Progress) Print() {
-	if pr.BytesRead == pr.TotalSize {
-		fmt.Println("DONE!")
-		return
-	}
-
-	fmt.Printf("File upload in progress: %d\n", pr.BytesRead)
 }
 
 func validateInternalError(c echo.Context, err error) error {
