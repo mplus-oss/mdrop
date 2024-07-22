@@ -40,7 +40,7 @@ func main() {
 		GetCommand(args)
 		os.Exit(1)
 	case "send":
-		fmt.Println("Not implemented")
+		SendCommand(args)
 		os.Exit(1)
 	default:
 		printUsage()
