@@ -61,8 +61,12 @@ func AuthCommand(args []string) {
 	}
 
 	config := internal.ConfigFile{
-		URL:   *url,
-		Token: *token,
+		URL:    *url,
+		Token:  *token,
+		Tunnel: internal.ConfigFileTunnel{
+			Host: verifyData.TunnelHost,
+			Port: verifyData.TunnelPort,
+		},
 	}
 	err = config.WriteConfig()
 	if err != nil {
@@ -75,8 +79,10 @@ func AuthCommand(args []string) {
 }
 
 type VerifyJSONReturn struct {
-	Message  string `json:"message"`
-	IsPublic bool   `json:"isPublic"`
+	Message		 string `json:"message"`
+	IsPublic	 bool   `json:"isPublic"`
+	TunnelHost	 string `json:"tunnelHost"`
+	TunnelPort	 int    `json:"tunnelPort"`
 
 	// This respon fired when the API is failed
 	ErrorTitle string `json:"title"`
