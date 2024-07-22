@@ -35,6 +35,7 @@ func GetCommand(args []string) {
 		os.Exit(1)
 	}
 
+	fmt.Println("Note: Press Ctrl+C to close the session.")
 	fmt.Print("Creating the room...\n\n")
 
 	// Get token data
