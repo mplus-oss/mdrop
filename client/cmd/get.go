@@ -16,7 +16,7 @@ func GetCommand(args []string) {
 	var (
 		expired	  = flag.Int("expired", 3, "Expired timeout in hours.")
 		port			= flag.Int("port", 0, "Specified port on broker. Range of port is about 10k - 59k. (default rand(10000, 59999))")
-		localPort = flag.Int("localPost", 6000, "Specified port on local.")
+		localPort = flag.Int("localPort", 6000, "Specified port on local.")
 	)
 	flag.Parse(args)
 
@@ -37,9 +37,6 @@ func GetCommand(args []string) {
 
 	fmt.Print("Creating the room...\n\n")
 
-	// Start the Echo server
-	go createWebserver(*localPort)
-
 	// Get token data
 	var path = fmt.Sprintf(
 		"%v/room/create?durationInHours=%v&port=%v",
@@ -53,6 +50,10 @@ func GetCommand(args []string) {
 		os.Exit(1)
 	}
 	fmt.Println(roomData.Token)
+
+	// Start the Echo server
+	go createWebserver(*localPort, roomData.Token)
+
 	fmt.Println(
 		"\nCopy this token to the sender. Make sure sender has authenticated to",
 		c.URL,
