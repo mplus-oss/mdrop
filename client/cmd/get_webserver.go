@@ -21,6 +21,10 @@ func createWebserver(port int, token string) {
 	e.HidePort = true
 	
 	e.POST("/receive", func (c echo.Context) error {
+		// Set keep alive
+		c.Response().Header().Set("Connection", "Keep-Alive")
+		c.Response().Header().Set("Keep-Alive", "timeout=5,max=0")
+
 		// Get query token
 		if queryToken := c.QueryParam("token"); queryToken != token {
 			return c.JSON(http.StatusBadRequest, map[string]string{
