@@ -38,7 +38,7 @@ func createWebserver(port int, token string) {
 
 		// Prompting
 		fmt.Println("\nIncoming file:", file.Filename)
-		fmt.Print("Accept? [Y/N] -> ")
+		fmt.Print("Accept? [(Y)es/(N)o] -> ")
 		prompt, err := reader.ReadString('\n')
 		if err != nil {
 			return validateInternalError(c, err)
@@ -48,6 +48,41 @@ func createWebserver(port int, token string) {
 			return c.JSON(http.StatusUnauthorized, map[string]string{
 				"message": "File declined from receiver",
 			})
+		}
+
+		// Validate if the data can be override or not
+		currentPath, err := os.Getwd()
+		if err != nil {
+			return validateInternalError(c, err)
+		}
+		currentPath += "/"+file.Filename
+		if fileStatus, _ := os.Stat(currentPath); fileStatus != nil {
+			fmt.Print("There's duplicate file. Action? [(Y)es/(N)o/(R)ename] -> ")
+			prompt, err = reader.ReadString('\n')
+			if err != nil {
+				return validateInternalError(c, err)
+			}
+			prompt = strings.Replace(prompt, "\n", "", -1)
+			if strings.ToLower(prompt) == "n" {
+				return c.JSON(http.StatusUnauthorized, map[string]string{
+					"message": "File declined from receiver",
+				})
+			}
+			if strings.ToLower(prompt) == "r" {
+				fmt.Print("Change filename ["+file.Filename+"] -> ")
+				prompt, err = reader.ReadString('\n')
+				if err != nil {
+					return validateInternalError(c, err)
+				}
+				prompt = strings.Replace(prompt, "\n", "", -1)
+				if prompt == file.Filename {
+					fmt.Println("Canceled. Duplicate file.")
+					return c.JSON(http.StatusUnauthorized, map[string]string{
+						"message": "Duplicate file from receiver",
+					})
+				}
+				file.Filename = prompt
+			}
 		}
 
 		// File scanning
