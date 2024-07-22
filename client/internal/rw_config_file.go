@@ -2,19 +2,25 @@ package internal
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 )
 
 var (
 	ConfigFileLocation string
 )
 
+type ConfigFileTunnel struct {
+	Host string	`json:"host"`
+	Port int	`json:"port"`
+}
+
 type ConfigFile struct {
-	Token	string
-	URL		string
+	Token	string			  `json:"token"`
+	URL		string			  `json:"url"`
+	Tunnel  ConfigFileTunnel  `json:"tunnel"`
 }
 
 func init() {
@@ -37,11 +43,15 @@ func (c ConfigFile) WriteConfig() error {
 		}
 	}
 
-	strConfig := base64.StdEncoding.EncodeToString([]byte(c.URL))
+	strJsonByte, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+	strConfig := base64.StdEncoding.EncodeToString(strJsonByte)
 	if c.Token != "" {
 		strConfig += " " + base64.RawStdEncoding.EncodeToString([]byte(c.Token))
 	}
-	err := os.WriteFile(ConfigFileLocation, []byte(strConfig), 0644)
+	err = os.WriteFile(ConfigFileLocation, []byte(strConfig), 0644)
 	if err != nil {
 		return err
 	}
@@ -51,8 +61,6 @@ func (c ConfigFile) WriteConfig() error {
 }
 
 func (c ConfigFile) ParseConfig(conf* ConfigFile) (error) {
-	var urlByte, tokenByte []byte
-
 	if !CheckConfigFileExist() {
 		return errors.New("No config file on local. Please log in first.")
 	}
@@ -61,23 +69,14 @@ func (c ConfigFile) ParseConfig(conf* ConfigFile) (error) {
 		return err
 	}
 
-	fileSplit := strings.Split(string(file), " ")
-	if len(fileSplit) == 0 && len(fileSplit) > 2 {
-		return errors.New("Invalid config file. Please log in again.")
-	}
-
-	urlByte, err = base64.StdEncoding.DecodeString(fileSplit[0])
-	if len(fileSplit) > 1 {
-		tokenByte, err = base64.RawStdEncoding.DecodeString(fileSplit[1])
-	} else {
-		tokenByte = []byte("")
-	}
+	confByte, err := base64.StdEncoding.DecodeString(string(file))
 	if err != nil {
 		return err
 	}
-
-	conf.URL = string(urlByte)
-	conf.Token = string(tokenByte)
+	err = json.Unmarshal(confByte, &conf)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
