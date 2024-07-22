@@ -33,6 +33,12 @@ public class VerifyController : Controller
         [JsonPropertyName("message")]
         public string Message { get; set; } = "";
 
+        [JsonPropertyName("tunnelHost")]
+        public string TunnelHost { get; set; } = Constant.TunnelHost;
+
+        [JsonPropertyName("tunnelPort")]
+        public int TunnelPort { get; set; } = Constant.TunnelPort;
+
         [JsonPropertyName("isPublic")]
         public bool IsPublic { get; set; } = false;
     }
