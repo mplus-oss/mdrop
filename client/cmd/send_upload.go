@@ -7,6 +7,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 func Upload(url string, values map[string]io.Reader) (err error) {
@@ -22,12 +24,13 @@ func Upload(url string, values map[string]io.Reader) (err error) {
             if fw, err = w.CreateFormFile(key, x.Name()); err != nil {
                 return
             }
-        } else {
-            if fw, err = w.CreateFormField(key); err != nil {
-                return
-            }
         }
-        if _, err = io.Copy(fw, r); err != nil {
+		fileInfo, err := r.(*os.File).Stat()
+		if err != nil {
+			return err
+		}
+		bar := progressbar.DefaultBytes(fileInfo.Size(), fileInfo.Name())
+        if _, err = io.Copy(io.MultiWriter(fw, bar), r); err != nil {
             return err
         }
 
