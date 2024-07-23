@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/mplus-oss/mdrop/client/internal"
 )
 
 var sshErrGlobal chan error = make(chan error)
+var sshPidGlobal chan int = make(chan int)
 
 func StartShellTunnel(isRemote bool, c internal.ConfigFile, localPort int, remotePort int) {
 	args := strings.Split(internal.GenerateSSHArgs(isRemote, c, localPort, remotePort), " ")
@@ -50,5 +52,16 @@ func StartShellTunnel(isRemote bool, c internal.ConfigFile, localPort int, remot
 		}
 	}()
 
+	sshPidGlobal <- cmd.Process.Pid
 	cmd.Wait()
+}
+
+func KillShell(pid int) error {
+	cmd := exec.Command("kill", "-9", strconv.Itoa(pid))
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+	cmd.Wait()
+	return nil
 }

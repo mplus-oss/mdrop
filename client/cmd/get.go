@@ -15,7 +15,7 @@ func GetCommand(args []string) {
 	flag := flag.NewFlagSet("mdrop get", flag.ExitOnError)
 	var (
 		expired	  = flag.Int("expired", 3, "Expired timeout in hours.")
-		port			= flag.Int("port", 0, "Specified port on broker. Range of port is about 10k - 59k. (default rand(10000, 59999))")
+		port	  = flag.Int("port", 0, "Specified port on broker. Range of port is about 10k - 59k. (default rand(10000, 59999))")
 		localPort = flag.Int("localPort", 6000, "Specified port on local.")
 	)
 	flag.Parse(args)

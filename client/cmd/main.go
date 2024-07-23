@@ -35,13 +35,10 @@ func main() {
 	switch(cmd) {
 	case "auth":
 		AuthCommand(args)
-		os.Exit(1)
 	case "get":
 		GetCommand(args)
-		os.Exit(1)
 	case "send":
 		SendCommand(args)
-		os.Exit(1)
 	default:
 		printUsage()
 	}
