@@ -89,6 +89,7 @@ func exitSendStrategy(err error) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+	os.Exit(1)
 }
 
 func readToken() (string, error) {

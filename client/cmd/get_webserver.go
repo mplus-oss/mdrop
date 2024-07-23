@@ -16,6 +16,7 @@ import (
 
 func createWebserver(port int, token string) {
 	reader := bufio.NewReader(os.Stdin)
+	isInProgress := false
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
@@ -24,6 +25,13 @@ func createWebserver(port int, token string) {
 		// Set keep alive
 		c.Response().Header().Set("Connection", "Keep-Alive")
 		c.Response().Header().Set("Keep-Alive", "timeout=5,max=0")
+
+		// If there's upload on progress
+		if isInProgress {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"message": "There's some process on receiver server",
+			})
+		}
 
 		// Get query token
 		if queryToken := c.QueryParam("token"); queryToken != token {
@@ -41,6 +49,7 @@ func createWebserver(port int, token string) {
 		}
 
 		// Prompting
+		isInProgress = true
 		fmt.Println("\nIncoming file:", file.Filename)
 		fmt.Print("Accept? [(Y)es/(N)o] -> ")
 		prompt, err := reader.ReadString('\n')
@@ -49,6 +58,7 @@ func createWebserver(port int, token string) {
 		}
 		prompt = strings.Replace(prompt, "\n", "", -1)
 		if strings.ToLower(prompt) != "y" {
+			isInProgress = false
 			return c.JSON(http.StatusUnauthorized, map[string]string{
 				"message": "File declined from receiver",
 			})
@@ -68,6 +78,7 @@ func createWebserver(port int, token string) {
 			}
 			prompt = strings.Replace(prompt, "\n", "", -1)
 			if strings.ToLower(prompt) == "n" {
+				isInProgress = false
 				return c.JSON(http.StatusUnauthorized, map[string]string{
 					"message": "File declined from receiver",
 				})
@@ -81,6 +92,7 @@ func createWebserver(port int, token string) {
 				prompt = strings.Replace(prompt, "\n", "", -1)
 				if prompt == file.Filename {
 					fmt.Println("Canceled. Duplicate file.")
+					isInProgress = false
 					return c.JSON(http.StatusUnauthorized, map[string]string{
 						"message": "Duplicate file from receiver",
 					})
@@ -108,6 +120,7 @@ func createWebserver(port int, token string) {
 		}
 
 		// Complete
+		isInProgress = false
 		return c.JSON(http.StatusOK, map[string]string{
 			"message": "ok",
 		})
