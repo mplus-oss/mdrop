@@ -1,18 +1,19 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine as builder
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine as build
 WORKDIR /app
 COPY . .
 
 RUN set -ex; \
-  dotnet publish -c Release; \
-  mv /app/MDrop.Broker/bin/Release/net8.0/linux-x64/publish /app/;
+  dotnet restore; \
+  dotnet publish --no-restore -c Release -o ./Application
 
-FROM docker.io/library/alpine:latest as runner
-COPY --from=builder /app/publish /app
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine-composite
 WORKDIR /app
+
+COPY --from=build /app/Application /app
+COPY --from=build /app/*.sh /app/
 
 RUN set -ex; \
   apk update; \
-  apk add gcc gcompat icu-dev icu-libs musl-dev tzdata; \
-  rm appsettings.*.json;
+  apk add openssl;
 
-CMD [ "/app/MDrop.Broker" ]
+ENTRYPOINT [ "/app/entrypoint.sh" ]
