@@ -36,9 +36,17 @@ func GetCommand(args []string) {
 	}
 
 	fmt.Println("Note: Press Ctrl+C to close the session.")
-	fmt.Print("Creating the room...\n\n")
+	fmt.Println("Connecting to tunnel...")
+
+	go StartShellTunnel(true, c, *localPort, *port)
+	err = <- sshErrGlobal
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 
 	// Get token data
+	fmt.Print("Creating the room...\n\n")
 	var path = fmt.Sprintf(
 		"%v/room/create?durationInHours=%v&port=%v",
 		c.URL,
