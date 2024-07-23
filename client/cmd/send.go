@@ -54,8 +54,7 @@ func SendCommand(args []string) {
 	go StartShellTunnel(false, c, *localPort, joinData.Port)
 	err = <- sshErrGlobal
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		exitSendStrategy(err)
 	}
 
 	// Try to send data to reciever
@@ -70,13 +69,22 @@ func SendCommand(args []string) {
 	}
 	err = Upload(uri, val)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		exitSendStrategy(err)
 	}
 	fmt.Println("Success!")
 
 	pid := <- sshPidGlobal
-	err = KillShell(pid)	
+	err = KillShell(pid)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func exitSendStrategy(err error) {
+	fmt.Println(err)
+	pid := <- sshPidGlobal
+	err = KillShell(pid)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
