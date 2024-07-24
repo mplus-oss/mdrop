@@ -32,7 +32,7 @@ jobs:
           flavor: |
             latest=auto
             suffix=${{ steps.flavor.outputs.name }}
-          images: ghcr.io/${{ github.repository }}-sshd-tunnel
+          images: registry.mitija.com/${{ github.repository }}-sshd-tunnel
           tags: |
             type=sha,format=short,prefix=commit-
             type=raw,value=latest
