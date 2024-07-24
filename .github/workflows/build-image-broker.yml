@@ -1,4 +1,4 @@
-name: Build Image for Broker
+name: Build Image for all Dockerfile
 
 on:
   push:
@@ -6,8 +6,15 @@ on:
       - master
 
 jobs:
-  build:
+  build-broker:
     uses: ./.github/workflows/build-push.yml
     with:
       folder_path: server/
+    secrets: inherit
+
+  build-sshd:
+    uses: ./.github/workflows/build-push.yml
+    with:
+      folder_path: tunnel_image/
+      images_name: ghcr.io/${{ github.repository }}-sshd-tunnel
     secrets: inherit
