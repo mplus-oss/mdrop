@@ -1,4 +1,4 @@
-name: Build Image for SSHD Tunnel
+name: Build Image for Broker
 
 on:
   push:
@@ -21,9 +21,9 @@ jobs:
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: registry.mitija.com
-          username: ${{ secrets.HARBOR_USERNAME }}
-          password: ${{ secrets.HARBOR_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate Docker image metadata
         uses: docker/metadata-action@v5
@@ -32,7 +32,7 @@ jobs:
           flavor: |
             latest=auto
             suffix=${{ steps.flavor.outputs.name }}
-          images: registry.mitija.com/${{ github.repository }}-sshd-tunnel
+          images: ghcr.io/${{ github.repository }}
           tags: |
             type=sha,format=short,prefix=commit-
             type=raw,value=latest
@@ -41,7 +41,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v5
         with:
-          context: tunnel_image/
+          context: server/
           push: true
           tags: ${{ steps.img_meta.outputs.tags }}
           labels: ${{ steps.img_meta.outputs.labels }}
