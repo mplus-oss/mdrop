@@ -1,4 +1,5 @@
 FROM docker.io/library/alpine:latest
+LABEL org.opencontainers.image.authors="Ikramullah <ikramullah@mplus.software>,Syahrial Agni Prasetya <syahrial@mplus.software>"
 
 RUN set -ex; \
   apk update; \
