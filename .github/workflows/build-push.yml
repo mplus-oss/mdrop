@@ -4,11 +4,9 @@ on:
   workflow_call:
     inputs:
       images_name:
-        required: true
         type: string
         default: ghcr.io/${{ github.repository }}
       folder_path:
-        required: true
         type: string
         default: .
 
