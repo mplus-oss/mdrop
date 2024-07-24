@@ -8,9 +8,6 @@ on:
 jobs:
   build_push:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./tunnel_image
     steps:
       - name: Check Out Repo
         uses: actions/checkout@v4
@@ -44,7 +41,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v5
         with:
-          context: ./
+          context: tunnel_image/
           push: true
           tags: ${{ steps.img_meta.outputs.tags }}
           labels: ${{ steps.img_meta.outputs.labels }}
