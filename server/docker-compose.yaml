@@ -10,5 +10,6 @@ services:
       PRIVATE_MODE_TOKEN: ""
       TUNNEL_HOST: 127.0.0.1
       TUNNEL_PORT: 2222
+      TUNNEL_PROXY: ""
     ports:
       - 5000:5000

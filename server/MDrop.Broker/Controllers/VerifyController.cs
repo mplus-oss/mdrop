@@ -33,13 +33,21 @@ public class VerifyController : Controller
         [JsonPropertyName("message")]
         public string Message { get; set; } = "";
 
-        [JsonPropertyName("tunnelHost")]
-        public string TunnelHost { get; set; } = Constant.TunnelHost;
-
-        [JsonPropertyName("tunnelPort")]
-        public int TunnelPort { get; set; } = Constant.TunnelPort;
-
         [JsonPropertyName("isPublic")]
         public bool IsPublic { get; set; } = false;
+
+        [JsonPropertyName("tunnel")]
+        public TunnelProperty Tunnel { get; set; } = new TunnelProperty();
+        public class TunnelProperty
+        {
+            [JsonPropertyName("host")]
+            public string Host { get; set; } = Constant.TunnelHost;
+
+            [JsonPropertyName("port")]
+            public int Port { get; set; } = Constant.TunnelPort;
+
+            [JsonPropertyName("proxy")]
+            public string Proxy { get; set; } = Constant.TunnelProxy;
+        }
     }
 }
