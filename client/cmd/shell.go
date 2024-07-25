@@ -15,8 +15,8 @@ var sshErrGlobal chan error = make(chan error)
 var sshPidGlobal chan int = make(chan int)
 
 func StartShellTunnel(isRemote bool, c internal.ConfigFile, localPort int, remotePort int) {
-	args := strings.Split(internal.GenerateSSHArgs(isRemote, c, localPort, remotePort), " ")
-	cmd := exec.Command("ssh", args...)
+	args := internal.GenerateSSHArgs(isRemote, c, localPort, remotePort)
+	cmd := exec.Command("sh", "-c", args)
 
 	stdout, err := cmd.StdoutPipe()
 	stderr, err := cmd.StderrPipe()
@@ -47,6 +47,12 @@ func StartShellTunnel(isRemote bool, c internal.ConfigFile, localPort int, remot
 			}
 			if strings.Contains(m, "remote port forwarding failed") {
 				sshErrGlobal <- errors.New("Duplicate remote on bridge server")
+			}
+			if strings.Contains(m, "EXCEPTION") {
+				sshErrGlobal <- errors.New("Error from Server: "+m)
+			}
+			if strings.Contains(m, "exec") && strings.Contains(m, "not found") {
+				sshErrGlobal <- errors.New("Proxy app not found. Did you install it?")
 			}
 			fmt.Println(m)
 		}
