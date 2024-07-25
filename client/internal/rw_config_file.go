@@ -13,8 +13,9 @@ var (
 )
 
 type ConfigFileTunnel struct {
-	Host string	`json:"host"`
-	Port int	`json:"port"`
+	Host  string  `json:"host"`
+	Port  int	  `json:"port"`
+	Proxy string  `json:"proxy"`
 }
 
 type ConfigFile struct {
