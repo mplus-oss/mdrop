@@ -38,6 +38,7 @@ func main() {
 	case "get":
 		fmt.Println("Not implemented")
 	case "send":
+        SendCommand(args)
 		fmt.Println("Not implemented")
 	default:
 		printUsage()

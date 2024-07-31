@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mplus-oss/mdrop/client/internal"
+	"github.com/mplus-oss/mdrop/internal"
 )
 
 var sshErrGlobal chan error = make(chan error)
