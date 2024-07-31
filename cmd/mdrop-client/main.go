@@ -34,11 +34,11 @@ func main() {
 	cmd, args := args[0], args[1:]
 	switch(cmd) {
 	case "auth":
-		AuthCommand(args)
+		fmt.Println("Not implemented")
 	case "get":
-		GetCommand(args)
+		fmt.Println("Not implemented")
 	case "send":
-		SendCommand(args)
+		fmt.Println("Not implemented")
 	default:
 		printUsage()
 	}
