@@ -13,15 +13,15 @@ var (
 )
 
 type ConfigFileTunnel struct {
-	Host  string  `json:"host"`
-	Port  int	  `json:"port"`
-	Proxy string  `json:"proxy"`
+	Host  string `json:"host"`
+	Port  int    `json:"port"`
+	Proxy string `json:"proxy"`
 }
 
 type ConfigFile struct {
-	Token	string			  `json:"token"`
-	URL		string			  `json:"url"`
-	Tunnel  ConfigFileTunnel  `json:"tunnel"`
+	Token  string           `json:"token"`
+	URL    string           `json:"url"`
+	Tunnel ConfigFileTunnel `json:"tunnel"`
 }
 
 func init() {
@@ -61,7 +61,7 @@ func (c ConfigFile) WriteConfig() error {
 	return nil
 }
 
-func (c ConfigFile) ParseConfig(conf* ConfigFile) (error) {
+func (c ConfigFile) ParseConfig(conf *ConfigFile) error {
 	if !CheckConfigFileExist() {
 		return errors.New("No config file on local. Please log in first.")
 	}

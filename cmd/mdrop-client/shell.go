@@ -49,7 +49,7 @@ func StartShellTunnel(isRemote bool, c internal.ConfigFile, localPort int, remot
 				sshErrGlobal <- errors.New("Duplicate remote on bridge server")
 			}
 			if strings.Contains(m, "EXCEPTION") {
-				sshErrGlobal <- errors.New("Error from Server: "+m)
+				sshErrGlobal <- errors.New("Error from Server: " + m)
 			}
 			if strings.Contains(m, "exec") && strings.Contains(m, "not found") {
 				sshErrGlobal <- errors.New("Proxy app not found. Did you install it?")

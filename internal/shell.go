@@ -6,13 +6,13 @@ import (
 	"strings"
 )
 
-func GenerateSSHArgs(isRemote bool, c ConfigFile, localPort int, remotePort int) string{
+func GenerateSSHArgs(isRemote bool, c ConfigFile, localPort int, remotePort int) string {
 	args := []string{
 		"-o",
 		"UserKnownHostsFile=/dev/null",
 		"-o",
 		"StrictHostKeyChecking=no",
-		"tunnel@"+c.Tunnel.Host,
+		"tunnel@" + c.Tunnel.Host,
 		strconv.Itoa(remotePort),
 	}
 	generateProxyCommand(&args, c)
@@ -29,10 +29,10 @@ func GenerateSSHArgs(isRemote bool, c ConfigFile, localPort int, remotePort int)
 		)
 	}
 
-	return "ssh "+strings.Join(args, " ")
+	return "ssh " + strings.Join(args, " ")
 }
 
-func generateProxyCommand(args* []string, c ConfigFile) {
+func generateProxyCommand(args *[]string, c ConfigFile) {
 	switch c.Tunnel.Proxy {
 	case "cloudflared":
 		*args = append(
@@ -40,7 +40,7 @@ func generateProxyCommand(args* []string, c ConfigFile) {
 				"-o",
 				fmt.Sprintf("ProxyCommand=\"cloudflared access ssh --hostname %v\"", c.Tunnel.Host),
 			},
-			*args...
+			*args...,
 		)
 	default:
 		*args = append([]string{"-p", strconv.Itoa(c.Tunnel.Port)}, *args...)

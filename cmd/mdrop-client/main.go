@@ -32,13 +32,13 @@ func main() {
 	}
 
 	cmd, args := args[0], args[1:]
-	switch(cmd) {
+	switch cmd {
 	case "auth":
 		fmt.Println("Not implemented")
 	case "get":
 		fmt.Println("Not implemented")
 	case "send":
-        SendCommand(args)
+		SendCommand(args)
 		fmt.Println("Not implemented")
 	default:
 		printUsage()
