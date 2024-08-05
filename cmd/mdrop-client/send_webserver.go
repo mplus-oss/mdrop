@@ -71,6 +71,7 @@ func receiveSendWebserver(w http.ResponseWriter, request *http.Request) {
 		"Content-Disposition",
 		fmt.Sprintf("attachment; filename=\"%v\"", fileInfo.Name()),
 	)
+	w.Header().Set("X-Attachment-Name", fileInfo.Name())
 
 	bar := progressbar.DefaultBytes(fileInfo.Size(), fileInfo.Name())
 	_, err = io.Copy(io.MultiWriter(bar, w), file)

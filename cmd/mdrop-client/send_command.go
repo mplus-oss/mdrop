@@ -4,7 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	//internal "github.com/mplus-oss/mdrop/internal"
+
+	"github.com/mplus-oss/mdrop/internal"
 )
 
 func SendCommand(args []string) {
@@ -13,13 +14,13 @@ func SendCommand(args []string) {
 
 	flag := flag.NewFlagSet("mdrop send", flag.ExitOnError)
 	var (
-		help      = *flag.Bool("help", false, "Print this message")
-		localPort = *flag.Int("localPort", 6000, "Specified receiver port on local")
+		help      = flag.Bool("help", false, "Print this message")
+		localPort = flag.Int("localPort", 6000, "Specified sender port on local")
 	)
 	flag.Parse(args)
 
 	file := flag.Arg(0)
-	if help || file == "" {
+	if *help || file == "" {
 		fmt.Println("Command: mdrop send [options] <file>")
 		flag.Usage()
 		os.Exit(1)
@@ -28,7 +29,7 @@ func SendCommand(args []string) {
 	// Deploy webserver instance
 	go func() {
 		fmt.Println("Spawning webserver...")
-		err := SendWebserver(localPort, file)
+		err := SendWebserver(*localPort, file)
 		if err != nil {
 			errChan <- err
 		}
@@ -37,7 +38,6 @@ func SendCommand(args []string) {
 	// Check if there's some error on different threads
 	err = <-errChan
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		internal.PrintErrorWithExit("receiveWebserverFatalError", err, 1)
 	}
 }

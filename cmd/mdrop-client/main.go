@@ -36,10 +36,9 @@ func main() {
 	case "auth":
 		fmt.Println("Not implemented")
 	case "get":
-		fmt.Println("Not implemented")
+		GetCommand(args)
 	case "send":
 		SendCommand(args)
-		fmt.Println("Not implemented")
 	default:
 		printUsage()
 	}
