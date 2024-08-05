@@ -30,9 +30,7 @@ func SendCommand(args []string) {
 	go func() {
 		fmt.Println("Spawning webserver...")
 		err := SendWebserver(*localPort, file)
-		if err != nil {
-			errChan <- err
-		}
+		errChan <- err
 	}()
 
 	// Check if there's some error on different threads
@@ -40,4 +38,5 @@ func SendCommand(args []string) {
 	if err != nil {
 		internal.PrintErrorWithExit("receiveWebserverFatalError", err, 1)
 	}
+	fmt.Println("Done!")
 }

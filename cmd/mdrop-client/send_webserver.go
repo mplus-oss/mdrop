@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
@@ -10,32 +11,58 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/mplus-oss/mdrop/internal"
 	"github.com/schollz/progressbar/v3"
 )
 
+var server *http.Server = &http.Server{}
 var filePath string = ""
+var isStillUsed bool = false
 
-func SendWebserver(localPort int, file string) error {
+var senderErrorChan chan error = make(chan error)
+
+func SendWebserver(localPort int, file string) (err error) {
 	filePath = file
+	server.Addr = ":"+strconv.Itoa(localPort)
 
 	http.Handle("/receive", http.HandlerFunc(receiveSendWebserver))
 	http.Handle("/checksum", http.HandlerFunc(checksumSendWebserver))
 
-	return http.ListenAndServe(":"+strconv.Itoa(localPort), nil)
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			if strings.Contains(err.Error(), "Server closed") {
+				return
+			}
+			senderErrorChan <- internal.CustomizeError("receiveWebserverFatal", err)
+		}
+	}()
+
+	err = <-senderErrorChan
+
+    shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 10*time.Second)
+    defer shutdownRelease()
+
+	fmt.Println("Gracefully shutdown server...")
+	err = server.Shutdown(shutdownCtx)
+    if err != nil {
+		return err
+    }
+	return nil
 }
 
 func checksumSendWebserver(w http.ResponseWriter, request *http.Request) {
 	file, err := os.Open(filePath)
 	if err != nil {
-		internal.PrintErrorWithExit("checksumOpenFile", err, 1)
+		senderErrorChan <- internal.CustomizeError("checksumOpenFile", err)
 	}
 	defer file.Close()
 
 	hash := sha256.New()
 	if _, err := io.Copy(hash, file); err != nil {
-		internal.PrintErrorWithExit("checksumHashSum", err, 1)
+		senderErrorChan <- internal.CustomizeError("checksumHashSum", err)
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
@@ -49,16 +76,22 @@ func receiveSendWebserver(w http.ResponseWriter, request *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	if isStillUsed {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	// This prevent from MITM after transfering file
+	isStillUsed = true
 
 	file, err := os.Open(filePath)
 	if err != nil {
-		internal.PrintErrorWithExit("receiveOpenFile", err, 1)
+		senderErrorChan <- internal.CustomizeError("receiveOpenFile", err)
 	}
 	defer file.Close()
 
 	fileInfo, err := file.Stat()
 	if err != nil {
-		internal.PrintErrorWithExit("receiveOpenFileStat", err, 1)
+		senderErrorChan <- internal.CustomizeError("receiveOpenFileStat", err)
 	}
 
 	w.Header().Set("Transfer-Encoding", "identity")
@@ -80,8 +113,10 @@ func receiveSendWebserver(w http.ResponseWriter, request *http.Request) {
 		if strings.Contains(errMsg, "broken pipe") {
 			err = errors.New("Broken pipe from receiver because forced close or terminated.")
 		}
-		internal.PrintErrorWithExit("receiveStreamFile", err, 1)
+		request.Close = true
+		senderErrorChan <- internal.CustomizeError("receiveStreamFile", err)
 	}
 
 	request.Close = true
+	senderErrorChan <- nil
 }

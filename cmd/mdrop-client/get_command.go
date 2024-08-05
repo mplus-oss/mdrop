@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"flag"
 	"fmt"
@@ -14,11 +15,12 @@ import (
 )
 
 func GetCommand(args []string) {
+	reader := bufio.NewReader(os.Stdin)
 	flag := flag.NewFlagSet("mdrop get", flag.ExitOnError)
 	var (
-		help      = flag.Bool("help", false, "Print this message")
-		output	  = flag.String("output", "", "Set output file name")
-		localPort = flag.Int("localPort", 6000, "Specified sender port remoted on local")
+		help		= flag.Bool("help", false, "Print this message")
+		fileNameOpt = flag.String("file", "", "Set filename")
+		localPort	= flag.Int("localPort", 6000, "Specified sender port remoted on local")
 	)
 	flag.Parse(args)
 
@@ -44,20 +46,51 @@ func GetCommand(args []string) {
 	}
 	defer resp.Body.Close()
 
+	// Set filename from header or from output
 	fileName := resp.Header.Get("X-Attachment-Name")
 	if fileName == "" {
 		internal.PrintErrorWithExit("sendHttpClientInvalidAttachmentName", err, 1)
 	}
-	if *output != "" {
-		fileName = *output
+	if *fileNameOpt != "" {
+		fileName = *fileNameOpt
 	}
 	fmt.Println("File found:", fileName)
 
+	// Check if there's duplicate file
+	currentPath, err := os.Getwd()
+	if err != nil {
+		internal.PrintErrorWithExit("sendFileWorkDir", err, 1)
+	}
+	currentPath += "/"+fileName
+	fmt.Print("There's duplicate file. Action? [(R)eplace/R(e)name/(C)ancel] [Default: R] -> ")
+	prompt, err := reader.ReadString('\n')
+	if err != nil {
+		internal.PrintErrorWithExit("sendPromptError", err, 1)
+	}
+	prompt = strings.Replace(prompt, "\n", "", -1)
+	if strings.ToLower(prompt) == "c" {
+		internal.PrintErrorWithExit("sendPromptCancel", errors.New("Canceled by action"), 0)
+	}
+	if strings.ToLower(prompt) == "e" {
+		fmt.Print("Change filename ["+fileName+"]: ")
+		prompt, err = reader.ReadString('\n')
+		if err != nil {
+			internal.PrintErrorWithExit("sendPromptError", err, 1)
+		}
+		prompt = strings.Replace(prompt, "\n", "", -1)
+		if prompt == fileName {
+			internal.PrintErrorWithExit("sendPromptDuplicateFilename", errors.New("Canceled by action"), 0)
+		}
+		fileName = prompt
+	}
+
+	// Create file
 	file, err := os.Create(fileName)
 	if err != nil {
 		internal.PrintErrorWithExit("sendFileCreation", err, 1)
 	}
 
+	// Downloading file
 	fmt.Println("Downloading...")
 	bar := progressbar.DefaultBytes(resp.ContentLength, fileName)
 	_, err = io.Copy(io.MultiWriter(bar, file), resp.Body)
@@ -68,4 +101,6 @@ func GetCommand(args []string) {
 		}
 		internal.PrintErrorWithExit("sendStreamFile", err, 1)
 	}
+
+	fmt.Println("Download success!")
 }
