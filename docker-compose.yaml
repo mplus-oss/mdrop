@@ -3,8 +3,10 @@
 services:
   sshd_tunnel:
     container_name: sshd_tunnel
+    restart: unless-stopped
+    environment:
+      PRIVATE_TOKEN: mdrop-jaya-selalu
     build:
       context: .
-    restart: unless-stopped
     ports:
       - 2222:22

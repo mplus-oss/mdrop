@@ -1,5 +1,2 @@
-# mdrop
-
-TCP-over-SSH P2P Tunneling Based File Transfer. Inspired by ShareDrop and Apple AirDrop.
-
-*Reserved.*
+# Image
+For this image, you just need to expose 22/tcp on the host.
