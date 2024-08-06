@@ -12,16 +12,10 @@ var (
 	ConfigFileLocation string
 )
 
-type ConfigFileTunnel struct {
+type ConfigFile struct {
 	Host  string `json:"host"`
 	Port  int    `json:"port"`
 	Proxy string `json:"proxy"`
-}
-
-type ConfigFile struct {
-	Token  string           `json:"token"`
-	URL    string           `json:"url"`
-	Tunnel ConfigFileTunnel `json:"tunnel"`
 }
 
 func init() {
@@ -49,9 +43,6 @@ func (c ConfigFile) WriteConfig() error {
 		return err
 	}
 	strConfig := base64.StdEncoding.EncodeToString(strJsonByte)
-	if c.Token != "" {
-		strConfig += " " + base64.RawStdEncoding.EncodeToString([]byte(c.Token))
-	}
 	err = os.WriteFile(ConfigFileLocation, []byte(strConfig), 0644)
 	if err != nil {
 		return err

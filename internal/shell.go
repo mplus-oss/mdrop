@@ -6,43 +6,64 @@ import (
 	"strings"
 )
 
-func GenerateSSHArgs(isRemote bool, c ConfigFile, localPort int, remotePort int) string {
+type SSHParameter struct {
+	IsRemote	bool
+	LocalPort	int
+	RemotePort	int
+	ConfigFile	ConfigFile
+	Command		[]string
+}
+
+func (s SSHParameter) GenerateConnectSSHArgs() string {
 	args := []string{
+		"-p",
+		strconv.Itoa(s.ConfigFile.Port),
 		"-o",
 		"UserKnownHostsFile=/dev/null",
 		"-o",
 		"StrictHostKeyChecking=no",
-		"tunnel@" + c.Tunnel.Host,
-		strconv.Itoa(remotePort),
+		"tunnel@" + s.ConfigFile.Host,
 	}
-	generateProxyCommand(&args, c)
+	args = append(args, s.Command...)
+	return "ssh "+strings.Join(args, " ")
+}
 
-	if isRemote {
+func (s SSHParameter) GenerateRemoteSSHArgs() string {
+	args := []string{
+		"-p",
+		strconv.Itoa(s.ConfigFile.Port),
+		"-o",
+		"UserKnownHostsFile=/dev/null",
+		"-o",
+		"StrictHostKeyChecking=no",
+		"tunnel@" + s.ConfigFile.Host,
+		"connect",
+	}
+
+	if s.IsRemote {
 		args = append(
-			[]string{"-R", fmt.Sprintf("%v:127.0.0.1:%v", remotePort, localPort)},
+			[]string{"-R", fmt.Sprintf("%v:127.0.0.1:%v", s.RemotePort, s.LocalPort)},
 			args...,
 		)
 	} else {
 		args = append(
-			[]string{"-L", fmt.Sprintf("%v:127.0.0.1:%v", localPort, remotePort)},
+			[]string{"-L", fmt.Sprintf("%v:127.0.0.1:%v", s.LocalPort, s.RemotePort)},
 			args...,
 		)
 	}
 
-	return "ssh " + strings.Join(args, " ")
+	return "ssh "+strings.Join(args, " ")
 }
 
-func generateProxyCommand(args *[]string, c ConfigFile) {
-	switch c.Tunnel.Proxy {
+func (s SSHParameter) GenerateProxyArgs(args *[]string) {
+	switch s.ConfigFile.Proxy {
 	case "cloudflared":
 		*args = append(
 			[]string{
 				"-o",
-				fmt.Sprintf("ProxyCommand=\"cloudflared access ssh --hostname %v\"", c.Tunnel.Host),
+				fmt.Sprintf("ProxyCommand=\"cloudflared access ssh --hostname %v\"", s.ConfigFile.Host),
 			},
 			*args...,
 		)
-	default:
-		*args = append([]string{"-p", strconv.Itoa(c.Tunnel.Port)}, *args...)
 	}
 }

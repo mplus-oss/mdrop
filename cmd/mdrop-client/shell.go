@@ -14,10 +14,25 @@ import (
 var sshErrGlobal chan error = make(chan error)
 var sshPidGlobal chan int = make(chan int)
 
-func StartShellTunnel(isRemote bool, c internal.ConfigFile, localPort int, remotePort int) {
-	args := internal.GenerateSSHArgs(isRemote, c, localPort, remotePort)
-	cmd := exec.Command("sh", "-c", args)
+func KillShell(pid int) error {
+	cmd := exec.Command("kill", "-9", strconv.Itoa(pid))
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+	cmd.Wait()
+	return nil
+}
 
+func StartShellTunnel(s internal.SSHParameter, isTunnel bool) {
+	args := ""
+	if isTunnel {
+		args = s.GenerateRemoteSSHArgs()
+	} else {
+		args = s.GenerateConnectSSHArgs()
+	}
+
+	cmd := exec.Command("sh", "-c", args)
 	stdout, err := cmd.StdoutPipe()
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
@@ -30,7 +45,7 @@ func StartShellTunnel(isRemote bool, c internal.ConfigFile, localPort int, remot
 		s.Split(bufio.ScanLines)
 		for s.Scan() {
 			m := s.Text()
-			if strings.Contains(m, "Connected!") {
+			if strings.Contains(m, "Pong!") {
 				sshErrGlobal <- nil
 			}
 		}
@@ -62,12 +77,3 @@ func StartShellTunnel(isRemote bool, c internal.ConfigFile, localPort int, remot
 	cmd.Wait()
 }
 
-func KillShell(pid int) error {
-	cmd := exec.Command("kill", "-9", strconv.Itoa(pid))
-	err := cmd.Start()
-	if err != nil {
-		return err
-	}
-	cmd.Wait()
-	return nil
-}

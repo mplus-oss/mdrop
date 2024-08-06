@@ -23,12 +23,22 @@ func main() {
 		PingCommand()
 	case "get-port":
 		GetPortCommand()
+	case "connect":
+		ConnectCommand()
 	default:
 		fmt.Println("Subcommand: ping, get-port")
 	}
 }
 
+func ConnectCommand() {
+	for true {
+		fmt.Println("Pong.....")
+		time.Sleep(10 * time.Second)
+	}
+}
+
 func GetPortCommand() {
+	portFound := 0
 	for i := 5000; i <= 59999; i++ {
 		timeout := time.Second
 		conn, err := net.DialTimeout("tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(i)), timeout)
@@ -36,10 +46,17 @@ func GetPortCommand() {
 			fmt.Println("Error ["+strconv.Itoa(i)+"]: "+err.Error())
 		}
 		if conn == nil {
-			fmt.Println("Found! "+strconv.Itoa(i))
+			portFound = i
 			break
 		}
 		fmt.Println("Closed ["+strconv.Itoa(i)+"]: Continue.")
+	}
+
+	if portFound != 0 {
+		fmt.Println("Get-Port-Found "+strconv.Itoa(portFound))
+	} else {
+		fmt.Println("Closed ["+strconv.Itoa(portFound)+"]: Not found.")
+		os.Exit(2)
 	}
 }
 
