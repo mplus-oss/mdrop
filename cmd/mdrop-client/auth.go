@@ -27,7 +27,7 @@ func AuthCommand() {
 		Command:    []string{"ping"},
 	}
 	go func() {
-		_, sshOutput, err := StartShellTunnel(sshConfig, false)
+		sshOutput, err := StartShellTunnel(sshConfig, false)
 		if err != nil {
 			errChan <- err
 		}

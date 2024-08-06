@@ -49,13 +49,13 @@ func GetPortCommand() {
 			portFound = i
 			break
 		}
-		fmt.Println("Closed ["+strconv.Itoa(i)+"]: Continue.")
+		fmt.Println("Get-Port-Closed ["+strconv.Itoa(i)+"]: Continue.")
 	}
 
 	if portFound != 0 {
 		fmt.Println("Get-Port-Found "+strconv.Itoa(portFound))
 	} else {
-		fmt.Println("Closed ["+strconv.Itoa(portFound)+"]: Not found.")
+		fmt.Println("Get-Port-Closed ["+strconv.Itoa(portFound)+"]: Not found.")
 		os.Exit(2)
 	}
 }

@@ -15,6 +15,8 @@ import (
 )
 
 func GetCommand(args []string) {
+	errChan := make(chan error, 1)
+
 	reader := bufio.NewReader(os.Stdin)
 	flag := flag.NewFlagSet("mdrop get", flag.ExitOnError)
 	var (
@@ -30,8 +32,32 @@ func GetCommand(args []string) {
 		os.Exit(1)
 	}
 
-	// TODO: Create tunnel before remote
+	// Parse Config File
+	var config internal.ConfigFile
+	err := config.ParseConfig(&config)
+	if err != nil {
+		internal.PrintErrorWithExit("getParseConfigError", err, 1)
+	}
+
+	// Create tunnel before remote
+	fmt.Println("Connecting to tunnel for fetch port...")
+	sshConfig := internal.SSHParameter{
+		ConfigFile: config,
+		Command:    []string{"connect"},
+		LocalPort:  *localPort,
+		RemotePort: 5000,
+		IsRemote:   false,
+	}
+	go func() {
+		_, err := StartShellTunnel(sshConfig, true)
+		if err != nil {
+			errChan <- err
+		}
+	}()
+
+	// Check tunnel
 	fmt.Println("Connecting to sender...")
+	GetTcpReadyConnect(*localPort)
 	client := http.Client{}
 	resp, err := client.Post(
 		fmt.Sprintf("http://localhost:%v/receive", *localPort),
@@ -62,26 +88,28 @@ func GetCommand(args []string) {
 		internal.PrintErrorWithExit("sendFileWorkDir", err, 1)
 	}
 	currentPath += "/"+fileName
-	fmt.Print("There's duplicate file. Action? [(R)eplace/R(e)name/(C)ancel] [Default: R] -> ")
-	prompt, err := reader.ReadString('\n')
-	if err != nil {
-		internal.PrintErrorWithExit("sendPromptError", err, 1)
-	}
-	prompt = strings.Replace(prompt, "\n", "", -1)
-	if strings.ToLower(prompt) == "c" {
-		internal.PrintErrorWithExit("sendPromptCancel", errors.New("Canceled by action"), 0)
-	}
-	if strings.ToLower(prompt) == "e" {
-		fmt.Print("Change filename ["+fileName+"]: ")
-		prompt, err = reader.ReadString('\n')
+	if fileStatus, _ := os.Stat(currentPath); fileStatus != nil {
+		fmt.Print("There's duplicate file. Action? [(R)eplace/R(e)name/(C)ancel] [Default: R] -> ")
+		prompt, err := reader.ReadString('\n')
 		if err != nil {
 			internal.PrintErrorWithExit("sendPromptError", err, 1)
 		}
 		prompt = strings.Replace(prompt, "\n", "", -1)
-		if prompt == fileName {
-			internal.PrintErrorWithExit("sendPromptDuplicateFilename", errors.New("Canceled by action"), 0)
+		if strings.ToLower(prompt) == "c" {
+			internal.PrintErrorWithExit("sendPromptCancel", errors.New("Canceled by action"), 0)
 		}
-		fileName = prompt
+		if strings.ToLower(prompt) == "e" {
+			fmt.Print("Change filename ["+fileName+"]: ")
+			prompt, err = reader.ReadString('\n')
+			if err != nil {
+				internal.PrintErrorWithExit("sendPromptError", err, 1)
+			}
+			prompt = strings.Replace(prompt, "\n", "", -1)
+			if prompt == fileName {
+				internal.PrintErrorWithExit("sendPromptDuplicateFilename", errors.New("Canceled by action"), 0)
+			}
+			fileName = prompt
+		}
 	}
 
 	// Create file

@@ -21,7 +21,7 @@ func KillShell(pid int) error {
 	return nil
 }
 
-func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (pid int, output string, err error) {
+func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, err error) {
 	errChan := make(chan error, 0)
 	outputChan := make(chan string, 0)
 
@@ -36,7 +36,7 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (pid int, output s
 	stdout, err := cmd.StdoutPipe()
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		return pid, output, err
+		return output, err
 	}
 	cmd.Start()
 
@@ -45,9 +45,22 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (pid int, output s
 		s.Split(bufio.ScanLines)
 		for s.Scan() {
 			m := s.Text()
+			// Case: If connected
 			if strings.Contains(m, "Pong!") {
 				outputChan <- m
 				errChan <- nil
+			}
+
+			// Case: If port found
+			if strings.Contains(m, "Get-Port-Found") {
+				outputChan <- m
+				errChan <- nil
+			}
+
+			// Case: If port full
+			if strings.Contains(m, "Get-Port-Closed") && strings.Contains(m, "Not found") {
+				outputChan <- "Not found"
+				errChan <- errors.New("Port full on server")
 			}
 		}
 	}()
@@ -78,6 +91,6 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (pid int, output s
 	err = <-errChan
 	cmd.Wait()
 
-	return cmd.Process.Pid, output, err
+	return output, err
 }
 
