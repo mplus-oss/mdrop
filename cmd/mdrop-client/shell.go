@@ -11,9 +11,6 @@ import (
 	"github.com/mplus-oss/mdrop/internal"
 )
 
-var sshErrGlobal chan error = make(chan error)
-var sshPidGlobal chan int = make(chan int)
-
 func KillShell(pid int) error {
 	cmd := exec.Command("kill", "-9", strconv.Itoa(pid))
 	err := cmd.Start()
@@ -24,7 +21,10 @@ func KillShell(pid int) error {
 	return nil
 }
 
-func StartShellTunnel(s internal.SSHParameter, isTunnel bool) {
+func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (pid int, output string, err error) {
+	errChan := make(chan error, 0)
+	outputChan := make(chan string, 0)
+
 	args := ""
 	if isTunnel {
 		args = s.GenerateRemoteSSHArgs()
@@ -36,7 +36,7 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) {
 	stdout, err := cmd.StdoutPipe()
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		sshErrGlobal <- err
+		return pid, output, err
 	}
 	cmd.Start()
 
@@ -46,7 +46,8 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) {
 		for s.Scan() {
 			m := s.Text()
 			if strings.Contains(m, "Pong!") {
-				sshErrGlobal <- nil
+				outputChan <- m
+				errChan <- nil
 			}
 		}
 	}()
@@ -61,19 +62,22 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) {
 				continue
 			}
 			if strings.Contains(m, "remote port forwarding failed") {
-				sshErrGlobal <- errors.New("Duplicate remote on bridge server")
+				errChan <- errors.New("Duplicate remote on bridge server")
 			}
 			if strings.Contains(m, "EXCEPTION") {
-				sshErrGlobal <- errors.New("Error from Server: " + m)
+				errChan <- errors.New("Error from Server: " + m)
 			}
 			if strings.Contains(m, "exec") && strings.Contains(m, "not found") {
-				sshErrGlobal <- errors.New("Proxy app not found. Did you install it?")
+				errChan <- errors.New("Proxy app not found. Did you install it?")
 			}
 			fmt.Println(m)
 		}
 	}()
 
-	sshPidGlobal <- cmd.Process.Pid
+	output = <-outputChan
+	err = <-errChan
 	cmd.Wait()
+
+	return cmd.Process.Pid, output, err
 }
 

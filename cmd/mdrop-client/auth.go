@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -11,6 +12,8 @@ import (
 )
 
 func AuthCommand() {
+	errChan := make(chan error, 0)
+
 	// Set prompt
 	config, err := authPrompt()
 	if err != nil {
@@ -23,15 +26,18 @@ func AuthCommand() {
 		ConfigFile: config,
 		Command:    []string{"ping"},
 	}
-	go StartShellTunnel(sshConfig, false)
-
-	// Wait for tunnel
-	err = <-sshErrGlobal
-	pid := <-sshPidGlobal
-	if err != nil {
-		internal.PrintErrorWithExit("authTunnelError", err, 1)
-	}
-	err = KillShell(pid)
+	go func() {
+		_, sshOutput, err := StartShellTunnel(sshConfig, false)
+		if err != nil {
+			errChan <- err
+		}
+		if strings.Contains(sshOutput, "Pong!") {
+			errChan <- nil
+		} else {
+			errChan <- errors.New("Unexpected output from Tunnel")
+		}
+	}()
+	err = <-errChan
 	if err != nil {
 		internal.PrintErrorWithExit("authTunnelError", err, 1)
 	}
