@@ -13,11 +13,10 @@ WORKDIR /
 
 RUN set -ex; \
   apk update; \
-  apk add openssh bash lsof openssl;
+  apk add openssh bash;
 
 COPY ./tunnel.conf /etc/ssh/sshd_config.d/
 COPY ./entrypoint.sh .
-COPY ./mdrop-tunnel.sh .
 COPY --from=build /build/mdrop-tunnel /usr/bin/mdrop-tunnel
 
 RUN adduser tunnel -HD; \
