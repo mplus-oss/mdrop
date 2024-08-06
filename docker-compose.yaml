@@ -1,0 +1,10 @@
+# This docker compose for developing image tunnel
+
+services:
+  sshd_tunnel:
+    container_name: sshd_tunnel
+    restart: unless-stopped
+    build:
+      context: .
+    ports:
+      - 2222:22
