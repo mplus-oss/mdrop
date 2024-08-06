@@ -26,17 +26,28 @@ func GetCommand(args []string) {
 	)
 	flag.Parse(args)
 
-	if *help {
-		fmt.Println("Command: mdrop send [options] <file>")
+	token := flag.Arg(0)
+	if *help || token == "" {
+		fmt.Println("Command: mdrop get [options] <token>")
 		flag.Usage()
 		os.Exit(1)
 	}
 
+	// Parse token
+	sender := TokenTransferJSON{}
+	err := sender.ParseToken(token, &sender)
+	if err != nil {
+		internal.PrintErrorWithExit("getParseTokenError", err, 1)
+	}
+
 	// Parse Config File
 	var config internal.ConfigFile
-	err := config.ParseConfig(&config)
+	err = config.ParseConfig(&config)
 	if err != nil {
 		internal.PrintErrorWithExit("getParseConfigError", err, 1)
+	}
+	if sender.Host != config.Host {
+		internal.PrintErrorWithExit("getHostNotMatch", errors.New("Host not match"), 1)
 	}
 
 	// Create tunnel before remote
@@ -45,7 +56,7 @@ func GetCommand(args []string) {
 		ConfigFile: config,
 		Command:    []string{"connect"},
 		LocalPort:  *localPort,
-		RemotePort: 5000,
+		RemotePort: sender.RemotePort,
 		IsRemote:   false,
 	}
 	go func() {

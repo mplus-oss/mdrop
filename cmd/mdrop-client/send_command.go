@@ -83,6 +83,14 @@ func SendCommand(args []string) {
 		errChan <- err
 	}()
 
+	// Print token
+	token, err := TokenTransferJSON{Host: config.Host, RemotePort: remotePort}.GenerateToken()
+	if err != nil {
+		internal.PrintErrorWithExit("generateTokenError", err, 1)
+	}
+	fmt.Print("\nPlease copy this token to the receiver.")
+	fmt.Print("\nToken: "+token+"\n\n")
+
 	// Check if there's some error on different threads
 	err = <-errChan
 	if err != nil {
