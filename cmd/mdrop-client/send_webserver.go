@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/sha256"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -54,6 +53,7 @@ func SendWebserver(localPort int, file string) (err error) {
 }
 
 func checksumSendWebserver(w http.ResponseWriter, request *http.Request) {
+	fmt.Println("Receiver taking the checksum file.")
 	file, err := os.Open(filePath)
 	if err != nil {
 		senderErrorChan <- internal.CustomizeError("checksumOpenFile", err)
@@ -65,8 +65,9 @@ func checksumSendWebserver(w http.ResponseWriter, request *http.Request) {
 		senderErrorChan <- internal.CustomizeError("checksumHashSum", err)
 	}
 
+	hashString := fmt.Sprintf("%x", hash.Sum(nil))
 	w.Header().Set("Content-Type", "text/plain")
-	fmt.Fprint(w, hex.EncodeToString(hash.Sum(nil)))
+	fmt.Fprint(w, hashString)
 
 	request.Close = true
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"crypto/sha256"
 	"errors"
 	"flag"
 	"fmt"
@@ -70,7 +71,22 @@ func GetCommand(args []string) {
 	fmt.Println("Connecting to sender...")
 	GetTcpReadyConnect(*localPort)
 	client := http.Client{}
-	resp, err := client.Post(
+	resp, err := client.Get(
+		fmt.Sprintf("http://localhost:%v/checksum", *localPort),
+	)
+	if err != nil {
+		internal.PrintErrorWithExit("sendHttpClientChecksum", err, 1)
+	}
+	if resp.StatusCode != http.StatusOK {
+		internal.PrintErrorWithExit("sendHttpClientResponseChecksum", err, 1)
+	}
+	checksumBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		internal.PrintErrorWithExit("sendHttpClientReadChecksum", err, 1)
+	}
+	checksum := string(checksumBytes)
+
+	resp, err = client.Post(
 		fmt.Sprintf("http://localhost:%v/receive", *localPort),
 		"binary/octet-stream",
 		nil,
@@ -94,12 +110,11 @@ func GetCommand(args []string) {
 	fmt.Println("File found:", fileName)
 
 	// Check if there's duplicate file
-	currentPath, err := os.Getwd()
+	filePath, err := os.Getwd()
 	if err != nil {
 		internal.PrintErrorWithExit("sendFileWorkDir", err, 1)
 	}
-	currentPath += "/"+fileName
-	if fileStatus, _ := os.Stat(currentPath); fileStatus != nil {
+	if fileStatus, _ := os.Stat(filePath+"/"+fileName); fileStatus != nil {
 		fmt.Print("There's duplicate file. Action? [(R)eplace/R(e)name/(C)ancel] [Default: R] -> ")
 		prompt, err := reader.ReadString('\n')
 		if err != nil {
@@ -122,9 +137,10 @@ func GetCommand(args []string) {
 			fileName = prompt
 		}
 	}
+	filePath += "/"+fileName
 
 	// Create file
-	file, err := os.Create(fileName)
+	file, err := os.Create(filePath)
 	if err != nil {
 		internal.PrintErrorWithExit("sendFileCreation", err, 1)
 	}
@@ -140,6 +156,22 @@ func GetCommand(args []string) {
 		}
 		internal.PrintErrorWithExit("sendStreamFile", err, 1)
 	}
+
+	// Check checksum
+	fmt.Println("Checking checksum...")
+	fileDownloaded, err := os.Open(filePath)
+	if err != nil {
+		internal.PrintErrorWithExit("checksumFileOpen", err, 1)
+	}
+	hash := sha256.New()
+	if _, err := io.Copy(hash, fileDownloaded); err != nil {
+		internal.PrintErrorWithExit("checksumHashSum", err, 1)
+	}
+	checksumLocal := fmt.Sprintf("%x", hash.Sum(nil))
+	if checksumLocal != checksum {
+		internal.PrintErrorWithExit("checksumMismatch", errors.New("Checksum mismatch with sender"), 1)
+	}
+	fileDownloaded.Close()
 
 	fmt.Println("Download success!")
 }
