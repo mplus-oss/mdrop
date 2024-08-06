@@ -6,15 +6,9 @@ on:
       - master
 
 jobs:
-  build-broker:
-    uses: ./.github/workflows/build-push.yml
-    with:
-      folder_path: server/
-    secrets: inherit
-
   build-sshd:
     uses: ./.github/workflows/build-push.yml
     with:
-      folder_path: tunnel_image/
+      folder_path: .
       images_name: ghcr.io/${{ github.repository }}-sshd-tunnel
     secrets: inherit
