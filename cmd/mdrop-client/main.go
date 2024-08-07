@@ -8,13 +8,13 @@ import (
 
 const subCmdHelpMeesage string = `
 Subcommand:
-  auth [--url=uri] [--token=random_string]
+  auth
     subcommand
         Authenticate client to broker server
-  get
+  get [options] <token>
     subcommand
         Create instance for retriving file from sender
-  send
+  send [options] <file>
     subcommand
         Send file to reciever instance`
 
