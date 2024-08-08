@@ -17,17 +17,24 @@ import (
 )
 
 var server *http.Server = &http.Server{}
-var filePath string = ""
 var isStillUsed bool = false
+var totalFile int = 0
+var fileDownloaded int = 0
 
 var senderErrorChan chan error = make(chan error)
 
-func SendWebserver(localPort int, file string) (err error) {
-	filePath = file
+func SendWebserver(localPort int, file []string, uuid []string) (err error) {
+	totalFile = len(file)
 	server.Addr = ":"+strconv.Itoa(localPort)
 
-	http.Handle("/receive", http.HandlerFunc(receiveSendWebserver))
-	http.Handle("/checksum", http.HandlerFunc(checksumSendWebserver))
+	for i, _ := range file {
+		http.Handle("/"+uuid[i], http.HandlerFunc(func (w http.ResponseWriter, request *http.Request) {
+			receiveSendWebserver(w, request, file[i])
+		}))
+		http.Handle("/checksum-"+uuid[i], http.HandlerFunc(func (w http.ResponseWriter, request *http.Request) {
+			checksumSendWebserver(w, request, file[i])
+		}))
+	}
 
 	go func() {
 		err := server.ListenAndServe()
@@ -52,7 +59,7 @@ func SendWebserver(localPort int, file string) (err error) {
 	return nil
 }
 
-func checksumSendWebserver(w http.ResponseWriter, request *http.Request) {
+func checksumSendWebserver(w http.ResponseWriter, request *http.Request, filePath string) {
 	fmt.Println("Receiver taking the checksum file.")
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -72,7 +79,7 @@ func checksumSendWebserver(w http.ResponseWriter, request *http.Request) {
 	request.Close = true
 }
 
-func receiveSendWebserver(w http.ResponseWriter, request *http.Request) {
+func receiveSendWebserver(w http.ResponseWriter, request *http.Request, filePath string) {
 	if request.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -119,5 +126,12 @@ func receiveSendWebserver(w http.ResponseWriter, request *http.Request) {
 	}
 
 	request.Close = true
-	senderErrorChan <- nil
+
+	// Send channel to shutdown if file downloaded is same as file sent
+	fileDownloaded += 1
+	if fileDownloaded == totalFile {
+		senderErrorChan <- nil
+	} else {
+		isStillUsed = false
+	}
 }

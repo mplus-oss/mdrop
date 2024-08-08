@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/mplus-oss/mdrop/internal"
 )
 
@@ -23,8 +24,8 @@ func SendCommand(args []string) {
 	)
 	flag.Parse(args)
 
-	file := flag.Arg(0)
-	if *help || file == "" {
+	file := flag.Args()
+	if *help || len(file) == 0 {
 		fmt.Println("Command: mdrop send [options] <file>")
 		flag.Usage()
 		os.Exit(1)
@@ -76,20 +77,31 @@ func SendCommand(args []string) {
 		}
 	}()
 
-	// Deploy webserver instance
+	// Deploy webserver instance & add uuid for resolver
 	go func() {
+		fileUUID := []string{}
+
+		for range file {
+			fileUUID = append(fileUUID, uuid.New().String())
+		}
+
+		// Print token
+		token, err := TokenTransferJSON{
+			Host: config.Host,
+			RemotePort: remotePort,
+			Files: fileUUID,
+		}.GenerateToken()
+		if err != nil {
+			errChan <- err
+		}
+
+		fmt.Print("\nPlease copy this token to the receiver.")
+		fmt.Print("\nToken: "+token+"\n\n")
+
 		fmt.Println("Spawning webserver...")
-		err := SendWebserver(*localPort, file)
+		err = SendWebserver(*localPort, file, fileUUID)
 		errChan <- err
 	}()
-
-	// Print token
-	token, err := TokenTransferJSON{Host: config.Host, RemotePort: remotePort}.GenerateToken()
-	if err != nil {
-		internal.PrintErrorWithExit("generateTokenError", err, 1)
-	}
-	fmt.Print("\nPlease copy this token to the receiver.")
-	fmt.Print("\nToken: "+token+"\n\n")
 
 	// Check if there's some error on different threads
 	err = <-errChan
