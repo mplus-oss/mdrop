@@ -60,7 +60,18 @@ func GetDownload(localPort int, fileNameOpt string, uuid string) string {
 	if fileNameOpt != "" {
 		fileName = fileNameOpt
 	}
-	fmt.Println("File found:", fileName)
+	fmt.Println("File found:", fileName, fmt.Sprintf("[%v]", resp.Header.Get("X-Mime-Type")))
+
+	// Ask client if they wanna download it or not
+	fmt.Print("Download? [(Y)es/(N)o] [Default: Y] -> ")
+	prompt, err := reader.ReadString('\n')
+	if err != nil {
+		internal.PrintErrorWithExit("sendPromptError", err, 1)
+	}
+	prompt = strings.Replace(prompt, "\n", "", -1)
+	if strings.ToLower(prompt) == "n" {
+		internal.PrintErrorWithExit("sendPromptCancel", errors.New("Canceled by action"), 0)
+	}
 
 	// Check if there's duplicate file
 	filePath, err := os.Getwd()

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/mplus-oss/mdrop/internal"
 	"github.com/schollz/progressbar/v3"
 )
@@ -28,8 +29,14 @@ func SendWebserver(localPort int, file []string, uuid []string) (err error) {
 	server.Addr = ":"+strconv.Itoa(localPort)
 
 	for i, _ := range file {
+		// Check mimetype
+		mimeType, err := mimetype.DetectFile(file[i])
+		if err != nil {
+			senderErrorChan <- internal.CustomizeError("receiveMimeType", err)
+		}
+
 		http.Handle("/"+uuid[i], http.HandlerFunc(func (w http.ResponseWriter, request *http.Request) {
-			receiveSendWebserver(w, request, file[i])
+			receiveSendWebserver(w, request, file[i], mimeType.String())
 		}))
 		http.Handle("/checksum-"+uuid[i], http.HandlerFunc(func (w http.ResponseWriter, request *http.Request) {
 			checksumSendWebserver(w, request, file[i])
@@ -79,7 +86,7 @@ func checksumSendWebserver(w http.ResponseWriter, request *http.Request, filePat
 	request.Close = true
 }
 
-func receiveSendWebserver(w http.ResponseWriter, request *http.Request, filePath string) {
+func receiveSendWebserver(w http.ResponseWriter, request *http.Request, filePath string, mimeType string) {
 	if request.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -91,6 +98,7 @@ func receiveSendWebserver(w http.ResponseWriter, request *http.Request, filePath
 	// This prevent from MITM after transfering file
 	isStillUsed = true
 
+	// File open
 	file, err := os.Open(filePath)
 	if err != nil {
 		senderErrorChan <- internal.CustomizeError("receiveOpenFile", err)
@@ -101,6 +109,7 @@ func receiveSendWebserver(w http.ResponseWriter, request *http.Request, filePath
 	if err != nil {
 		senderErrorChan <- internal.CustomizeError("receiveOpenFileStat", err)
 	}
+
 
 	w.Header().Set("Transfer-Encoding", "identity")
 	w.Header().Set(
@@ -113,6 +122,7 @@ func receiveSendWebserver(w http.ResponseWriter, request *http.Request, filePath
 		fmt.Sprintf("attachment; filename=\"%v\"", fileInfo.Name()),
 	)
 	w.Header().Set("X-Attachment-Name", fileInfo.Name())
+	w.Header().Set("X-Mime-Type", mimeType)
 
 	bar := progressbar.DefaultBytes(fileInfo.Size(), fileInfo.Name())
 	_, err = io.Copy(io.MultiWriter(bar, w), file)
