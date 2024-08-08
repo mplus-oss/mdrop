@@ -26,7 +26,7 @@ func SendCommand(args []string) {
 
 	file := flag.Args()
 	if *help || len(file) == 0 {
-		fmt.Println("Command: mdrop send [options] <file>")
+		fmt.Println("Command: mdrop send [options] <file1> [file2] [file...]")
 		flag.Usage()
 		os.Exit(1)
 	}

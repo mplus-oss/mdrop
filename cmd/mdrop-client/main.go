@@ -14,7 +14,7 @@ Subcommand:
   get [options] <token>
     subcommand
         Create instance for retriving file from sender
-  send [options] <file>
+  send [options] <file1> [file2] [file...]
     subcommand
         Send file to reciever instance`
 
