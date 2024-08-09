@@ -25,6 +25,8 @@ func (s SSHParameter) GenerateConnectSSHArgs() string {
 		"tunnel@" + s.ConfigFile.Host,
 	}
 	args = append(args, s.Command...)
+	s.GenerateProxyArgs(&args)
+
 	return "ssh "+strings.Join(args, " ")
 }
 
@@ -51,6 +53,7 @@ func (s SSHParameter) GenerateRemoteSSHArgs() string {
 			args...,
 		)
 	}
+	s.GenerateProxyArgs(&args)
 
 	return "ssh "+strings.Join(args, " ")
 }
