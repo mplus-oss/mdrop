@@ -69,8 +69,9 @@ func GetCommand(args []string) {
 	// Downloading file
 	for _, uuid := range sender.Files {
 		// No error checking needed.
+		fileName := GetPrompt(*localPort, uuid, *fileNameOpt)
 		checksum := GetChecksum(*localPort, uuid)
-		filePath := GetDownload(*localPort, *fileNameOpt, uuid)
+		filePath := GetDownload(*localPort, uuid, fileName)
 
 		// Check checksum
 		fmt.Println("Checking checksum...")
@@ -89,5 +90,5 @@ func GetCommand(args []string) {
 		fileDownloaded.Close()
 	}
 
-	fmt.Println("Download success!")
+	fmt.Println("\nDownload success!")
 }
