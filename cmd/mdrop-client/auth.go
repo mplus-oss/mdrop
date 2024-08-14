@@ -52,6 +52,13 @@ func AuthCommand() {
 func authPrompt() (config internal.ConfigFile, err error) {
 	reader := bufio.NewReader(os.Stdin)
 
+	fmt.Print("Instance Name: ")
+	instanceName, err := reader.ReadString('\n')
+	if err != nil {
+		return internal.ConfigFile{}, err
+	}
+	instanceName = strings.Replace(instanceName, "\n", "", -1)
+
 	fmt.Print("Hostname: ")
 	hostname, err := reader.ReadString('\n')
 	if err != nil {
@@ -81,6 +88,7 @@ func authPrompt() (config internal.ConfigFile, err error) {
 	proxy = strings.Replace(proxy, "\n", "", -1)
 
 	config = internal.ConfigFile{
+		Name:  instanceName,
 		Host:  hostname,
 		Port:  portInt,
 		Proxy: proxy,
