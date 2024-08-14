@@ -32,11 +32,12 @@ func SendCommand(args []string) {
 	}
 
 	// Parse Config
-	var config internal.ConfigFile
-	err = config.ParseConfig(&config)
+	var authFile internal.ConfigSourceAuth
+	err = authFile.ParseConfig(&authFile)
 	if err != nil {
 		internal.PrintErrorWithExit("sendParseConfigError", err, 1)
 	}
+	config := authFile.ListConfiguration[authFile.Default]
 
 	// Get Port from Tunnel
 	fmt.Println("Connecting to tunnel for fetch port...")

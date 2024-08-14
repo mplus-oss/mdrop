@@ -37,11 +37,12 @@ func GetCommand(args []string) {
 	}
 
 	// Parse Config File
-	var config internal.ConfigFile
-	err = config.ParseConfig(&config)
+	var authFile internal.ConfigSourceAuth
+	err = authFile.ParseConfig(&authFile)
 	if err != nil {
 		internal.PrintErrorWithExit("getParseConfigError", err, 1)
 	}
+	config := authFile.ListConfiguration[authFile.Default]
 	if sender.Host != config.Host {
 		internal.PrintErrorWithExit("getHostNotMatch", errors.New("Host not match"), 1)
 	}
