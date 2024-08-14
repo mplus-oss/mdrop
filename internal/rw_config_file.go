@@ -92,6 +92,28 @@ func (c ConfigSourceAuth) ParseConfig(conf *ConfigSourceAuth) error {
 	return nil
 }
 
+func (c *ConfigSourceAuth) SetDefault(instanceName string) (err error) {
+	instanceID := c.GetTunnelBasedInstanceName(instanceName)
+	if instanceID == -1 {
+		return errors.New("Instance not found.")
+	}
+
+	c.Default = instanceID
+
+	strJsonByte, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+	strConfig := base64.StdEncoding.EncodeToString(strJsonByte)
+	err = os.WriteFile(ConfigFileLocation, []byte(strConfig), 0644)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Config file is saved on", ConfigFileLocation)
+	return nil
+}
+
 func (c ConfigSourceAuth) GetTunnelBasedInstanceName(instanceName string) (index int) {
 	index = -1
 

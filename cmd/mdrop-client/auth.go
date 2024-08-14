@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"errors"
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
@@ -11,8 +12,32 @@ import (
 	"github.com/mplus-oss/mdrop/internal"
 )
 
-func AuthCommand() {
+func AuthCommand(args []string) {
 	errChan := make(chan error, 0)
+
+	flag := flag.NewFlagSet("mdrop auth", flag.ExitOnError)
+	var (
+		defaultInstance	= flag.String("setDefault", "", "Set default tunnel instance.")
+		list			= flag.Bool("list", false, "Get list of tunnel instance")
+		help			= flag.Bool("help", false, "Print this message")
+	)
+	flag.Parse(args)
+
+	if *help {
+		fmt.Println("Command: mdrop auth [options]")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if *list {
+		getTunnelInstance()
+		os.Exit(0)
+	}
+
+	if *defaultInstance != "" {
+		setDefaultTunnelInstance(*defaultInstance)
+		os.Exit(0)
+	}
 
 	// Set prompt
 	config, err := authPrompt()
@@ -46,6 +71,34 @@ func AuthCommand() {
 	err = config.WriteConfig()
 	if err != nil {
 		internal.PrintErrorWithExit("authWriteConfig", err, 1)
+	}
+}
+
+func setDefaultTunnelInstance(instanceName string) {
+	var authConfig internal.ConfigSourceAuth
+	err := authConfig.ParseConfig(&authConfig)
+	if err != nil {
+		internal.PrintErrorWithExit("authParseConfig", err, 1)
+	}
+
+	err = authConfig.SetDefault(instanceName)
+	if err != nil {
+		internal.PrintErrorWithExit("authSetDefaultTunnelInstance", err, 1)
+	}
+}
+
+func getTunnelInstance() {
+	var authConfig internal.ConfigSourceAuth
+	err := authConfig.ParseConfig(&authConfig)
+	if err != nil {
+		internal.PrintErrorWithExit("authParseConfig", err, 1)
+	}
+
+	fmt.Println("Default instance:", authConfig.ListConfiguration[authConfig.Default].Name)
+	for i, instance := range authConfig.ListConfiguration {
+		fmt.Println(
+			fmt.Sprintf("[%v] %v", i, instance.Name),
+		)
 	}
 }
 

@@ -34,7 +34,7 @@ func main() {
 	cmd, args := args[0], args[1:]
 	switch cmd {
 	case "auth":
-		AuthCommand()
+		AuthCommand(args)
 	case "get":
 		GetCommand(args)
 	case "send":
