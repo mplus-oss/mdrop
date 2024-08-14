@@ -41,6 +41,9 @@ func SendWebserver(localPort int, file []string, uuid []string) (err error) {
 		http.Handle("/checksum-"+uuid[i], http.HandlerFunc(func (w http.ResponseWriter, request *http.Request) {
 			checksumSendWebserver(w, request, file[i])
 		}))
+		http.Handle("/verify-"+uuid[i], http.HandlerFunc(func (w http.ResponseWriter, request *http.Request) {
+			promptSendWebserver(w, request, file[i], mimeType.String())
+		}))
 	}
 
 	go func() {
@@ -64,6 +67,24 @@ func SendWebserver(localPort int, file []string, uuid []string) (err error) {
 		return err
     }
 	return nil
+}
+
+func promptSendWebserver(w http.ResponseWriter, request *http.Request, filePath string, mimeType string) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		senderErrorChan <- internal.CustomizeError("promptOpenFile", err)
+	}
+	fileStat, err := file.Stat()
+	if err != nil {
+		senderErrorChan <- internal.CustomizeError("promptFileStat", err)
+	}
+	defer file.Close()
+
+	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("X-Mime-Type", mimeType)
+	fmt.Fprint(w, fileStat.Name())
+
+	request.Close = true
 }
 
 func checksumSendWebserver(w http.ResponseWriter, request *http.Request, filePath string) {

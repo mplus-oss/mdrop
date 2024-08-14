@@ -12,7 +12,13 @@ var (
 	ConfigFileLocation string
 )
 
+type ConfigSourceAuth struct {
+	Default			  int			`json:"default"`
+	ListConfiguration []ConfigFile  `json:"listConfig"`
+}
+
 type ConfigFile struct {
+	Name  string `json:"name"`
 	Host  string `json:"host"`
 	Port  int    `json:"port"`
 	Proxy string `json:"proxy"`
@@ -29,16 +35,29 @@ func init() {
 	ConfigFileLocation += "/.mdrop"
 }
 
-func (c ConfigFile) WriteConfig() error {
+func (c ConfigFile) WriteConfig() (err error) {
+	var config ConfigSourceAuth
+
 	fmt.Println("Writing config file...")
 	if CheckConfigFileExist() {
-		err := os.Remove(GetConfigPath())
+		err = config.ParseConfig(&config)
 		if err != nil {
-			return err
+			err = os.Remove(GetConfigPath())
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	strJsonByte, err := json.Marshal(c)
+	// Check if there's multiple configuration
+	if config.GetTunnelBasedInstanceName(c.Name) != -1 {
+		return errors.New("Multiple instance name")
+	}
+
+	// Append config file
+	config.ListConfiguration = append(config.ListConfiguration, c)
+
+	strJsonByte, err := json.Marshal(config)
 	if err != nil {
 		return err
 	}
@@ -52,7 +71,7 @@ func (c ConfigFile) WriteConfig() error {
 	return nil
 }
 
-func (c ConfigFile) ParseConfig(conf *ConfigFile) error {
+func (c ConfigSourceAuth) ParseConfig(conf *ConfigSourceAuth) error {
 	if !CheckConfigFileExist() {
 		return errors.New("No config file on local. Please log in first.")
 	}
@@ -71,6 +90,41 @@ func (c ConfigFile) ParseConfig(conf *ConfigFile) error {
 	}
 
 	return nil
+}
+
+func (c *ConfigSourceAuth) SetDefault(instanceName string) (err error) {
+	instanceID := c.GetTunnelBasedInstanceName(instanceName)
+	if instanceID == -1 {
+		return errors.New("Instance not found.")
+	}
+
+	c.Default = instanceID
+
+	strJsonByte, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+	strConfig := base64.StdEncoding.EncodeToString(strJsonByte)
+	err = os.WriteFile(ConfigFileLocation, []byte(strConfig), 0644)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Config file is saved on", ConfigFileLocation)
+	return nil
+}
+
+func (c ConfigSourceAuth) GetTunnelBasedInstanceName(instanceName string) (index int) {
+	index = -1
+
+	for i, v := range c.ListConfiguration {
+		if v.Name == instanceName {
+			index = i
+			break
+		}
+	}
+
+	return index
 }
 
 func GetConfigPath() string {

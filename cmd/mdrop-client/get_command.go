@@ -37,11 +37,12 @@ func GetCommand(args []string) {
 	}
 
 	// Parse Config File
-	var config internal.ConfigFile
-	err = config.ParseConfig(&config)
+	var authFile internal.ConfigSourceAuth
+	err = authFile.ParseConfig(&authFile)
 	if err != nil {
 		internal.PrintErrorWithExit("getParseConfigError", err, 1)
 	}
+	config := authFile.ListConfiguration[authFile.Default]
 	if sender.Host != config.Host {
 		internal.PrintErrorWithExit("getHostNotMatch", errors.New("Host not match"), 1)
 	}
@@ -69,8 +70,9 @@ func GetCommand(args []string) {
 	// Downloading file
 	for _, uuid := range sender.Files {
 		// No error checking needed.
+		fileName := GetPrompt(*localPort, uuid, *fileNameOpt)
 		checksum := GetChecksum(*localPort, uuid)
-		filePath := GetDownload(*localPort, *fileNameOpt, uuid)
+		filePath := GetDownload(*localPort, uuid, fileName)
 
 		// Check checksum
 		fmt.Println("Checking checksum...")
@@ -89,5 +91,5 @@ func GetCommand(args []string) {
 		fileDownloaded.Close()
 	}
 
-	fmt.Println("Download success!")
+	fmt.Println("\nDownload success!")
 }
