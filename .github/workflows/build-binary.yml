@@ -21,7 +21,7 @@ jobs:
     secrets: inherit
 
   artifact-client:
-    needs: test-build-client
+    needs: [test-build-client, test-build-tunnel]
     uses: ./.github/workflows/reusable-build-golang-alpine.yml
     with:
       make_command: build-client
@@ -30,7 +30,7 @@ jobs:
     secrets: inherit
 
   artifact-tunnel:
-    needs: test-build-tunnel
+    needs: [test-build-client, test-build-tunnel]
     uses: ./.github/workflows/reusable-build-golang-alpine.yml
     with:
       make_command: build-tunnel
