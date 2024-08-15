@@ -11,6 +11,6 @@ jobs:
     uses: ./.github/workflows/build-push.yml
     with:
       context: .
-      file: ./tunnel.Dockerfile
+      file: tunnel.Dockerfile
       images_name: ghcr.io/${{ github.repository }}-sshd-tunnel
     secrets: inherit
