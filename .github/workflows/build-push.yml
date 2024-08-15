@@ -6,7 +6,7 @@ on:
       images_name:
         type: string
         default: ghcr.io/${{ github.repository }}
-      folder_path:
+      context:
         type: string
         default: .
 

@@ -1,5 +1,5 @@
 # Build tunnel
-FROM docker.io/library/golang:latest AS build
+FROM docker.io/library/golang:alpine AS build
 WORKDIR /build
 COPY . .
 
