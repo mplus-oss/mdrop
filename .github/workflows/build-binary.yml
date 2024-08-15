@@ -4,16 +4,50 @@ on:
   push:
     branches:
       - master
+      - development
 
 jobs:
-  client:
+  # For testing
+  test-build-client:
     uses: ./.github/workflows/reusable-build-golang-alpine.yml
     with:
       make_command: build-client
     secrets: inherit
 
-  tunnel:
+  test-build-tunnel:
     uses: ./.github/workflows/reusable-build-golang-alpine.yml
     with:
       make_command: build-tunnel
+    secrets: inherit
+
+  artifact-client:
+    needs: test-build-client
+    uses: ./.github/workflows/reusable-build-golang-alpine.yml
+    with:
+      make_command: build-client
+      use_artifacts: true
+      binary_name: mdrop
+    secrets: inherit
+
+  artifact-tunnel:
+    needs: test-build-tunnel
+    uses: ./.github/workflows/reusable-build-golang-alpine.yml
+    with:
+      make_command: build-tunnel
+      use_artifacts: true
+      binary_name: mdrop-tunnel
+    secrets: inherit
+
+  artifact-client-upload:
+    needs: artifact-client
+    uses: ./.github/workflows/reusable-upload-s3.yml
+    with:
+      binary_name: mdrop
+    secrets: inherit
+
+  artifact-tunnel-upload:
+    needs: artifact-tunnel
+    uses: ./.github/workflows/reusable-upload-s3.yml
+    with:
+      binary_name: mdrop-tunnel
     secrets: inherit
