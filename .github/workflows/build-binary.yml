@@ -7,46 +7,38 @@ on:
 
 jobs:
   # For testing
-  test-build-client:
+  test-build:
+    strategy:
+      matrix:
+        make_command: [build-client, build-tunnel]
     uses: ./.github/workflows/reusable-build-golang-alpine.yml
     with:
-      make_command: build-client
+      make_command: ${{ matrix.make_command }}
     secrets: inherit
 
-  test-build-tunnel:
+  artifact-build:
+    needs: [test-build]
+    strategy:
+      matrix:
+        make_command: [build-client, build-tunnel]
+        include:
+          - make_command: build-client
+            binary_name: mdrop
+          - make_command: build-tunnel
+            binary_name: mdrop-tunnel
     uses: ./.github/workflows/reusable-build-golang-alpine.yml
     with:
-      make_command: build-tunnel
-    secrets: inherit
-
-  artifact-client:
-    needs: [test-build-client, test-build-tunnel]
-    uses: ./.github/workflows/reusable-build-golang-alpine.yml
-    with:
-      make_command: build-client
+      make_command: ${{ matrix.make_command }}
       use_artifacts: true
-      binary_name: mdrop
+      binary_name: ${{ matrix.binary_name }}
     secrets: inherit
 
-  artifact-tunnel:
-    needs: [test-build-client, test-build-tunnel]
-    uses: ./.github/workflows/reusable-build-golang-alpine.yml
-    with:
-      make_command: build-tunnel
-      use_artifacts: true
-      binary_name: mdrop-tunnel
-    secrets: inherit
-
-  artifact-client-upload:
-    needs: artifact-client
+  artifact-upload:
+    needs: [artifact-build]
+    strategy:
+      matrix:
+        binary_name: [mdrop, mdrop-tunnel]
     uses: ./.github/workflows/reusable-upload-s3.yml
     with:
-      binary_name: mdrop
-    secrets: inherit
-
-  artifact-tunnel-upload:
-    needs: artifact-tunnel
-    uses: ./.github/workflows/reusable-upload-s3.yml
-    with:
-      binary_name: mdrop-tunnel
+      binary_name: ${{ matrix.binary_name }}
     secrets: inherit

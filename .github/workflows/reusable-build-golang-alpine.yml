@@ -33,5 +33,5 @@ jobs:
         if: ${{ inputs.use_artifacts }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.binary_name }}-build-artifact
+          name: ${{ inputs.binary_name }}-build-artifact-${{ github.sha }}
           path: ./${{ inputs.binary_name }}
