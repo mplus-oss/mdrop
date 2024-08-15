@@ -39,4 +39,4 @@ jobs:
           aws_key_id: ${{ secrets.BUCKET_USERNAME }}
           aws_secret_access_key: ${{ secrets.BUCKET_PASSWORD }}
           aws_bucket: ${{ secrets.BUCKET_NAME }}
-          source_dir: ./${{ inputs.binary_name }}
+          source_dir: .
