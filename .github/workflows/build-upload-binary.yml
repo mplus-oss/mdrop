@@ -15,13 +15,6 @@ jobs:
       binary_name: mdrop
     secrets: inherit
 
-  client-upload:
-    needs: client
-    uses: ./.github/workflows/reusable-upload-s3.yml
-    with:
-      binary_name: mdrop
-    secrets: inherit
-
   tunnel:
     uses: ./.github/workflows/reusable-build-golang-alpine.yml
     with:
@@ -30,8 +23,15 @@ jobs:
       binary_name: mdrop-tunnel
     secrets: inherit
 
+  client-upload:
+    needs: client
+    uses: ./.github/workflows/reusable-upload-s3.yml
+    with:
+      binary_name: mdrop
+    secrets: inherit
+
   tunnel-upload:
-    needs: tunnel
+    needs: [tunnel, client-upload]
     uses: ./.github/workflows/reusable-upload-s3.yml
     with:
       binary_name: mdrop-tunnel
