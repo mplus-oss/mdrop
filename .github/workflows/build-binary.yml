@@ -1,4 +1,4 @@
-name: Test build for all binaries
+name: Test build & Upload staging binaries to M+ S3
 
 on:
   push:
