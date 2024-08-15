@@ -2,11 +2,11 @@ name: Reusable workflow for upload file to S3
 
 on:
   workflow_call:
-    secrets:
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
+    #secrets:
+    #  AWS_ACCESS_KEY_ID:
+    #    required: true
+    #  AWS_SECRET_ACCESS_KEY:
+    #    required: true
     inputs:
       binary_name:
         type: string
