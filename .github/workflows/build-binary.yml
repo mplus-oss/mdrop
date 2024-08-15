@@ -8,13 +8,13 @@ on:
 
 jobs:
   client:
-    uses: ./.github/workflows/build-golang-alpine.yml
+    uses: ./.github/workflows/reusable-build-golang-alpine.yml
     with:
       make_command: build-client
     secrets: inherit
 
   tunnel:
-    uses: ./.github/workflows/build-golang-alpine.yml
+    uses: ./.github/workflows/reusable-build-golang-alpine.yml
     with:
       make_command: build-tunnel
     secrets: inherit

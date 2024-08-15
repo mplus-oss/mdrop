@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-sshd:
-    uses: ./.github/workflows/build-push.yml
+    uses: ./.github/workflows/reusable-push-image.yml
     with:
       context: .
       file: tunnel.Dockerfile
