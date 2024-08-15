@@ -17,7 +17,7 @@ func AuthCommand(args []string) {
 
 	flag := flag.NewFlagSet("mdrop auth", flag.ExitOnError)
 	var (
-		defaultInstance	= flag.String("setDefault", "", "Set default tunnel instance.")
+		defaultInstance	= flag.String("set-default", "", "Set default tunnel instance.")
 		list			= flag.Bool("list", false, "Get list of tunnel instance")
 		help			= flag.Bool("help", false, "Print this message")
 	)

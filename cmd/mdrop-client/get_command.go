@@ -17,8 +17,8 @@ func GetCommand(args []string) {
 	flag := flag.NewFlagSet("mdrop get", flag.ExitOnError)
 	var (
 		help		= flag.Bool("help", false, "Print this message")
-		fileNameOpt = flag.String("file", "", "Set filename")
-		localPort	= flag.Int("localPort", 6000, "Specified sender port remoted on local")
+		fileNameOpt = flag.String("output", "", "Set filename output")
+		localPort	= flag.Int("local-port", 6000, "Specified sender port remoted on local")
 	)
 	flag.Parse(args)
 

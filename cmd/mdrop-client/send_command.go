@@ -20,7 +20,7 @@ func SendCommand(args []string) {
 	flag := flag.NewFlagSet("mdrop send", flag.ExitOnError)
 	var (
 		help      = flag.Bool("help", false, "Print this message")
-		localPort = flag.Int("localPort", 6000, "Specified sender port on local")
+		localPort = flag.Int("local-port", 6000, "Specified sender port on local")
 	)
 	flag.Parse(args)
 
