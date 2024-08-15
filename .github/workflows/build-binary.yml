@@ -1,0 +1,20 @@
+name: Test build for all binaries
+
+on:
+  push:
+    branches:
+      - master
+      - development
+
+jobs:
+  client:
+    uses: ./.github/workflows/build-golang-alpine.yml
+    with:
+      make_command: build-client
+    secrets: inherit
+
+  tunnel:
+    uses: ./.github/workflows/build-golang-alpine.yml
+    with:
+      make_command: build-tunnel
+    secrets: inherit

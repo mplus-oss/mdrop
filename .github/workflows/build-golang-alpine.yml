@@ -1,0 +1,25 @@
+name: Reusable workflow for build golang on alpine
+
+on:
+  workflow_call:
+    inputs:
+      make_command:
+        type: string
+        default: restore
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: docker.io/library/golang:alpine
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - name: Install cgo + make Dependencies
+        run: |
+          apk update
+          apk add make gcc musl-dev
+      - name: Build app
+        run: make ${{ inputs.make_command }}
