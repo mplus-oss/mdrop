@@ -4,7 +4,7 @@ WORKDIR /build
 COPY . .
 
 RUN apk update; \
-  apk add make;
+  apk add make gcc musl-dev;
 
 RUN make build-tunnel; \
   chmod +x mdrop-tunnel;
