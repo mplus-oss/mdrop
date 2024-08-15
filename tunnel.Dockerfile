@@ -3,6 +3,9 @@ FROM docker.io/library/golang:alpine AS build
 WORKDIR /build
 COPY . .
 
+RUN apk update; \
+  apk add make;
+
 RUN make build-tunnel; \
   chmod +x mdrop-tunnel;
 
