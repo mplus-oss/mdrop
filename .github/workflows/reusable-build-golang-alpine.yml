@@ -34,4 +34,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.binary_name }}-build-artifact
-          path: ${{ inputs.binary_name }}
+          path: ./${{ inputs.binary_name }}
