@@ -30,8 +30,8 @@ jobs:
           ls -lah
       - name: Install curl + openssl
         run: |
-          apt update
-          apt install -y curl openssl
+          sudo apt-get update
+          sudo apt-get install -y curl openssl
       - name: Upload file
         run: |
           URL=${{ secrets.BUCKET_URL }}
