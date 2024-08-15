@@ -1,0 +1,28 @@
+name: Reusable workflow for upload file to S3
+
+on:
+  workflow_call:
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+    inputs:
+      binary_name:
+        type: string
+        default: mdrop
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        if: ${{ inputs.use_artifacts }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.binary_name }}-build-artifact
+          path: ${{ inputs.binary_name }}
+      - name: Check file
+        run: |
+          ls -lah
+          pwd
