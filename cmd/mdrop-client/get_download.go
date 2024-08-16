@@ -33,7 +33,7 @@ func GetChecksum(localPort int, uuid string) string {
 	return string(checksumBytes)
 }
 
-func GetPrompt(localPort int, uuid string, fileNameOpt string) (filePath string) {
+func GetPrompt(localPort int, uuid string, fileNameOpt string, isSingleFile bool) (filePath string) {
 	reader := bufio.NewReader(os.Stdin)
 	client := http.Client{}
 
@@ -72,9 +72,12 @@ func GetPrompt(localPort int, uuid string, fileNameOpt string) (filePath string)
 	if err != nil {
 		internal.PrintErrorWithExit("sendFileWorkDir", err, 1)
 	}
-	if fileNameOpt != "" {
-		fmt.Println("Changing filename to", fileNameOpt)
-		fileName = fileNameOpt
+	// Check if it's single file
+	if isSingleFile {
+		if fileNameOpt != "" {
+			fmt.Println("Changing filename to", fileNameOpt)
+			fileName = fileNameOpt
+		}
 	}
 	if fileStatus, _ := os.Stat(filePath+"/"+fileName); fileStatus != nil {
 		fmt.Print("There's duplicate file. Action? [(R)eplace/R(e)name/(C)ancel] [Default: R] -> ")
@@ -103,7 +106,7 @@ func GetPrompt(localPort int, uuid string, fileNameOpt string) (filePath string)
 	return fileName
 }
 
-func GetDownload(localPort int, uuid string, fileName string) string {
+func GetDownload(localPort int, uuid string, fileName string, fileNameOpt string, isSingleFile bool) string {
 	client := http.Client{}
 
 	resp, err := client.Post(
@@ -125,6 +128,10 @@ func GetDownload(localPort int, uuid string, fileName string) string {
 	filePath, err := os.Getwd()
 	if err != nil {
 		internal.PrintErrorWithExit("sendFileWorkDir", err, 1)
+	}
+	if !isSingleFile {
+		filePath = fileNameOpt
+		fmt.Println("Changing working directory to", filePath)
 	}
 	filePath += "/"+fileName
 
