@@ -42,6 +42,9 @@ func GetCommand(args []string) {
 	if err != nil {
 		internal.PrintErrorWithExit("getParseConfigError", err, 1)
 	}
+	if len(authFile.ListConfiguration) == 0 {
+		internal.PrintErrorWithExit("getConfigFileEmpty", errors.New("Config file empty. Please log in using `mdrop auth` before executing this command."), 1)
+	}
 	config := authFile.ListConfiguration[authFile.Default]
 	if sender.Host != config.Host {
 		internal.PrintErrorWithExit("getHostNotMatch", errors.New("Host not match"), 1)
