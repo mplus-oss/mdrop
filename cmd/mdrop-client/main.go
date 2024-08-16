@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+const version string = "v0.2.1-ame"
+
 const subCmdHelpMeesage string = `
 Subcommand:
   auth
@@ -16,7 +18,10 @@ Subcommand:
         Create instance for retriving file from sender
   send [options] <file1> [file2] [file...]
     subcommand
-        Send file to reciever instance`
+        Send file to reciever instance
+  version
+    subcommand
+        mdrop Version`
 
 func main() {
 	help := flag.Bool("help", false, "Print this message")
@@ -39,6 +44,9 @@ func main() {
 		GetCommand(args)
 	case "send":
 		SendCommand(args)
+	case "version":
+		fmt.Println("Version:", version)
+		os.Exit(0)
 	default:
 		printUsage()
 	}
