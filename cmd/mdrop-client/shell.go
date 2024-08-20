@@ -32,6 +32,7 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 		args = s.GenerateConnectSSHArgs()
 	}
 
+    fmt.Println(args)
 	cmd := exec.Command("sh", "-c", args)
 	stdout, err := cmd.StdoutPipe()
 	stderr, err := cmd.StderrPipe()

@@ -6,10 +6,13 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/mplus-oss/mdrop/internal"
+	"golang.org/x/term"
 )
 
 func AuthCommand(args []string) {
@@ -104,6 +107,21 @@ func getTunnelInstance() {
 
 func authPrompt() (config internal.ConfigFile, err error) {
 	reader := bufio.NewReader(os.Stdin)
+    stdin := int(syscall.Stdin)
+	oldState, err := term.GetState(stdin)
+	if err != nil {
+		return internal.ConfigFile{}, err
+	}
+	defer term.Restore(stdin, oldState)
+
+    sigch := make(chan os.Signal, 1)
+	signal.Notify(sigch, os.Interrupt)
+	go func() {
+		for _ = range sigch {
+			term.Restore(stdin, oldState)
+			os.Exit(1)
+		}
+	}()
 
 	fmt.Print("Instance Name: ")
 	instanceName, err := reader.ReadString('\n')
@@ -140,11 +158,19 @@ func authPrompt() (config internal.ConfigFile, err error) {
 	}
 	proxy = strings.Replace(proxy, "\n", "", -1)
 
+    fmt.Print("Private Key String [Set blank if none]: ")
+	privateKeyByte, err := term.ReadPassword(stdin)
+	if err != nil {
+		return internal.ConfigFile{}, err
+	}
+    privateKeyString := strings.Replace(string(privateKeyByte), "\n", "", -1)
+
 	config = internal.ConfigFile{
 		Name:  instanceName,
 		Host:  hostname,
 		Port:  portInt,
 		Proxy: proxy,
+        Key:   privateKeyString,
 	}
 	return config, nil
 }

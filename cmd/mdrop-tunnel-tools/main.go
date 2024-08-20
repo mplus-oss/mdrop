@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -26,7 +27,7 @@ func main() {
         fmt.Println(err)
         os.Exit(1)
     }
-    keyFile := string(byteKeyFile)
+    keyFile := strings.TrimSpace(string(byteKeyFile))
 
     // Check is command contains key or not
     if keyFile != "" {
@@ -88,11 +89,12 @@ func PingCommand() {
 	fmt.Println("Pong!")
 }
 
-func implContains(sl []string, name string) bool {
+func implContains(sl []string, name string) (found bool) {
+    found = false
 	for _, value := range sl {
 		if value == name {
-			return true
+			found = true
 		}
 	}
-	return false
+	return found
 }
