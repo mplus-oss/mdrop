@@ -9,11 +9,35 @@ import (
 	"time"
 )
 
+const KEY_FILE_LOCATION string = "/etc/mdrop-tunnel-key"
+
 func main() {
+    // Parse args
 	flag.Parse()
 	args := flag.Args()
+
+    // Check key file
+    if _, err := os.Stat(KEY_FILE_LOCATION); os.IsNotExist(err) {
+		fmt.Println("Key/token file not found at /etc/mdrop-tunnel-key")
+		os.Exit(10)
+    }
+    byteKeyFile, err := os.ReadFile(KEY_FILE_LOCATION)
+    if err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+    keyFile := string(byteKeyFile)
+
+    // Check is command contains key or not
+    if keyFile != "" {
+        if !implContains(args, keyFile) {
+            fmt.Println("Invalid key")
+            os.Exit(10)
+        }
+    }
+
 	if len(args) < 1 {
-		fmt.Println("Usage: mdrop-tunnel <subcommand> <args>")
+		fmt.Println("Usage: mdrop-tunnel <subcommand> [key]")
 		os.Exit(1)
 	}
 
@@ -62,4 +86,13 @@ func GetPortCommand() {
 
 func PingCommand() {
 	fmt.Println("Pong!")
+}
+
+func implContains(sl []string, name string) bool {
+	for _, value := range sl {
+		if value == name {
+			return true
+		}
+	}
+	return false
 }
