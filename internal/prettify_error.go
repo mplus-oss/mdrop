@@ -7,7 +7,14 @@ import (
 )
 
 func PrintErrorWithExit(instance string, err error, exitCode int) {
-	fmt.Println("\nFatal Error on " + instance + ":\n\t" + err.Error())
+	debug_env := os.Getenv("MDROP_DEBUG")
+
+	message := fmt.Sprintf("Error: %v", err.Error())
+	if debug_env == "1" {
+		message = fmt.Sprintf("\nFatal Error on %v:\n\t%v", instance, err.Error())
+	}
+
+	fmt.Println(message)
 	os.Exit(exitCode)
 }
 
