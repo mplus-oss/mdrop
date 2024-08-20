@@ -45,6 +45,7 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 		s.Split(bufio.ScanLines)
 		for s.Scan() {
 			m := s.Text()
+            fmt.Println(m)
 			// Case: If connected
 			if strings.Contains(m, "Pong!") {
 				outputChan <- m
@@ -62,6 +63,12 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 				outputChan <- "Not found"
 				errChan <- errors.New("Port full on server")
 			}
+
+            // Case: Invalid key
+            if strings.Contains(m, "Invalid key") {
+				outputChan <- "Invalid key"
+				errChan <- errors.New("Invalid key on execution")
+            }
 		}
 	}()
 
