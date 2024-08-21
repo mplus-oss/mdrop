@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -24,6 +25,7 @@ func KillShell(pid int) error {
 func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, err error) {
 	errChan := make(chan error, 0)
 	outputChan := make(chan string, 0)
+	debugEnv := os.Getenv("MDROP_SSH_DEBUG")
 
 	args := ""
 	if isTunnel {
@@ -32,7 +34,9 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 		args = s.GenerateConnectSSHArgs()
 	}
 
-    fmt.Println(args)
+	if debugEnv == "1" {
+		fmt.Println(args)
+	}
 	cmd := exec.Command("sh", "-c", args)
 	stdout, err := cmd.StdoutPipe()
 	stderr, err := cmd.StderrPipe()
@@ -46,7 +50,10 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 		s.Split(bufio.ScanLines)
 		for s.Scan() {
 			m := s.Text()
-            fmt.Println(m)
+			if debugEnv == "1" {
+				fmt.Println(m)
+			}
+
 			// Case: If connected
 			if strings.Contains(m, "Pong!") {
 				outputChan <- m
@@ -78,6 +85,10 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 		s.Split(bufio.ScanLines)
 		for s.Scan() {
 			m := s.Text()
+			if debugEnv == "1" {
+				fmt.Println(m)
+			}
+
 			// False flag #1
 			if strings.Contains(m, "chdir") || strings.Contains(m, "Permanently added") {
 				continue
