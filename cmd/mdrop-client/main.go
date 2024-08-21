@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const version string = "v0.2.1-ame"
+const version string = "v0.3.1-alya"
 
 const subCmdHelpMeesage string = `
 Subcommand:
