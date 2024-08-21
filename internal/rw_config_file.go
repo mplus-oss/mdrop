@@ -22,6 +22,7 @@ type ConfigFile struct {
 	Host  string `json:"host"`
 	Port  int    `json:"port"`
 	Proxy string `json:"proxy"`
+    Key   string `json:"key"`
 }
 
 func init() {

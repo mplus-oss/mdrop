@@ -26,6 +26,9 @@ func (s SSHParameter) GenerateConnectSSHArgs() string {
 	}
 	args = append(args, s.Command...)
 	s.GenerateProxyArgs(&args)
+    if s.ConfigFile.Key != "" {
+        args = append(args, s.ConfigFile.Key)
+    }
 
 	return "ssh "+strings.Join(args, " ")
 }
@@ -54,6 +57,9 @@ func (s SSHParameter) GenerateRemoteSSHArgs() string {
 		)
 	}
 	s.GenerateProxyArgs(&args)
+    if s.ConfigFile.Key != "" {
+        args = append(args, s.ConfigFile.Key)
+    }
 
 	return "ssh "+strings.Join(args, " ")
 }
