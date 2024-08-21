@@ -23,6 +23,7 @@ func AuthCommand(args []string) {
 		defaultInstance	= flag.String("set-default", "", "Set default tunnel instance.")
 		list			= flag.Bool("list", false, "Get list of tunnel instance")
 		help			= flag.Bool("help", false, "Print this message")
+		deleteInstance	= flag.String("delete", "", "Delete tunnel instance")
 	)
 	flag.Parse(args)
 
@@ -39,6 +40,11 @@ func AuthCommand(args []string) {
 
 	if *defaultInstance != "" {
 		setDefaultTunnelInstance(*defaultInstance)
+		os.Exit(0)
+	}
+
+	if *deleteInstance != "" {
+		deleteTunnelInstance(*deleteInstance)
 		os.Exit(0)
 	}
 
@@ -102,6 +108,33 @@ func getTunnelInstance() {
 		fmt.Println(
 			fmt.Sprintf("[%v] %v", i, instance.Name),
 		)
+	}
+}
+
+func deleteTunnelInstance(instanceName string) {
+	var authConfig internal.ConfigSourceAuth
+	err := authConfig.ParseConfig(&authConfig)
+	if err != nil {
+		internal.PrintErrorWithExit("authParseConfig", err, 1)
+	}
+
+	instanceIndex := -1
+	for i, instance := range authConfig.ListConfiguration {
+		if instance.Name == instanceName {
+			instanceIndex = i
+			break
+		}
+	}
+	if instanceIndex < 0 {
+		internal.PrintErrorWithExit("authInstanceNotFound", errors.New("Instance not found"), 1)
+	}
+	authConfig.ListConfiguration = append(
+		authConfig.ListConfiguration[:instanceIndex],
+		authConfig.ListConfiguration[instanceIndex+1:]...,
+	)
+	err = authConfig.WriteConfig()
+	if err != nil {
+		internal.PrintErrorWithExit("authParseConfig", err, 1)
 	}
 }
 

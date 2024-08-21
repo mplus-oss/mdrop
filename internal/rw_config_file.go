@@ -72,6 +72,21 @@ func (c ConfigFile) WriteConfig() (err error) {
 	return nil
 }
 
+func (c ConfigSourceAuth) WriteConfig() (err error) {
+	strJsonByte, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+	strConfig := base64.StdEncoding.EncodeToString(strJsonByte)
+	err = os.WriteFile(ConfigFileLocation, []byte(strConfig), 0644)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Config file is saved on", ConfigFileLocation)
+	return nil
+}
+
 func (c ConfigSourceAuth) ParseConfig(conf *ConfigSourceAuth) error {
 	if !CheckConfigFileExist() {
 		return errors.New("No config file on local. Please log in first.")
