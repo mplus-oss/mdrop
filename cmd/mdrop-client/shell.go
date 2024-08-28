@@ -106,9 +106,9 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 		}
 	}()
 
+	cmd.Wait()
 	output = <-outputChan
 	err = <-errChan
-	cmd.Wait()
 
 	return output, err
 }
