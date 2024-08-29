@@ -36,15 +36,17 @@ func init() {
 	ConfigFileLocation += "/.mdrop"
 }
 
-func (c ConfigFile) WriteRawConfig() (conf string, err error) {
+func (c ConfigFile) WriteRawConfig(isReplace bool) (conf string, err error) {
 	var config ConfigSourceAuth
 
-	if CheckConfigFileExist() {
-		err = config.ParseConfig(&config)
-		if err != nil {
-			err = os.Remove(GetConfigPath())
+	if !isReplace {
+		if CheckConfigFileExist() {
+			err = config.ParseConfig(&config)
 			if err != nil {
-				return "", err
+				err = os.Remove(GetConfigPath())
+				if err != nil {
+					return "", err
+				}
 			}
 		}
 	}
@@ -65,9 +67,9 @@ func (c ConfigFile) WriteRawConfig() (conf string, err error) {
 	return conf, nil
 }
 
-func (c ConfigFile) WriteConfig() (err error) {
+func (c ConfigFile) WriteConfig(isReplace bool) (err error) {
 	fmt.Println("Writing config file...")
-	strConfig, err := c.WriteRawConfig()
+	strConfig, err := c.WriteRawConfig(isReplace)
 	if err != nil {
 		return err
 	}

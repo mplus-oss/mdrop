@@ -25,6 +25,7 @@ func AuthCommand(args []string) {
 		help            = flag.Bool("help", false, "Print this message")
 		deleteInstance  = flag.String("delete", "", "Delete tunnel instance")
 		raw             = flag.Bool("raw", false, "Print raw output of .mdrop file")
+		replace         = flag.Bool("replace", false, "Replace .mdrop file with new config")
 	)
 	flag.Parse(args)
 
@@ -79,7 +80,7 @@ func AuthCommand(args []string) {
 
 	// Write config file
 	if *raw {
-		confString, err := config.WriteRawConfig()
+		confString, err := config.WriteRawConfig(*replace)
 		if err != nil {
 			internal.PrintErrorWithExit("authWriteRawConfig", err, 1)
 		}
@@ -87,7 +88,7 @@ func AuthCommand(args []string) {
 		fmt.Println(confString)
 		os.Exit(0)
 	}
-	err = config.WriteConfig()
+	err = config.WriteConfig(*replace)
 	if err != nil {
 		internal.PrintErrorWithExit("authWriteConfig", err, 1)
 	}
