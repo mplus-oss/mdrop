@@ -20,10 +20,10 @@ func AuthCommand(args []string) {
 
 	flag := flag.NewFlagSet("mdrop auth", flag.ExitOnError)
 	var (
-		defaultInstance	= flag.String("set-default", "", "Set default tunnel instance.")
-		list			= flag.Bool("list", false, "Get list of tunnel instance")
-		help			= flag.Bool("help", false, "Print this message")
-		deleteInstance	= flag.String("delete", "", "Delete tunnel instance")
+		defaultInstance = flag.String("set-default", "", "Set default tunnel instance.")
+		list            = flag.Bool("list", false, "Get list of tunnel instance")
+		help            = flag.Bool("help", false, "Print this message")
+		deleteInstance  = flag.String("delete", "", "Delete tunnel instance")
 	)
 	flag.Parse(args)
 
@@ -140,14 +140,14 @@ func deleteTunnelInstance(instanceName string) {
 
 func authPrompt() (config internal.ConfigFile, err error) {
 	reader := bufio.NewReader(os.Stdin)
-    stdin := int(syscall.Stdin)
+	stdin := int(syscall.Stdin)
 	oldState, err := term.GetState(stdin)
 	if err != nil {
 		return internal.ConfigFile{}, err
 	}
 	defer term.Restore(stdin, oldState)
 
-    sigch := make(chan os.Signal, 1)
+	sigch := make(chan os.Signal, 1)
 	signal.Notify(sigch, os.Interrupt)
 	go func() {
 		for _ = range sigch {
@@ -191,19 +191,19 @@ func authPrompt() (config internal.ConfigFile, err error) {
 	}
 	proxy = strings.Replace(proxy, "\n", "", -1)
 
-    fmt.Print("Private Key String [Set blank if none]: ")
+	fmt.Print("Private Key String [Set blank if none]: ")
 	privateKeyByte, err := term.ReadPassword(stdin)
 	if err != nil {
 		return internal.ConfigFile{}, err
 	}
-    privateKeyString := strings.Replace(string(privateKeyByte), "\n", "", -1)
+	privateKeyString := strings.Replace(string(privateKeyByte), "\n", "", -1)
 
 	config = internal.ConfigFile{
 		Name:  instanceName,
 		Host:  hostname,
 		Port:  portInt,
 		Proxy: proxy,
-        Key:   privateKeyString,
+		Key:   privateKeyString,
 	}
 	return config, nil
 }

@@ -91,16 +91,16 @@ func SendCommand(args []string) {
 
 		// Print token
 		token, err := TokenTransferJSON{
-			Host: config.Host,
+			Host:       config.Host,
 			RemotePort: remotePort,
-			Files: fileUUID,
+			Files:      fileUUID,
 		}.GenerateToken()
 		if err != nil {
 			errChan <- err
 		}
 
 		fmt.Print("\nPlease copy this token to the receiver.")
-		fmt.Print("\nToken: "+token+"\n\n")
+		fmt.Print("\nToken: " + token + "\n\n")
 
 		fmt.Println("Spawning webserver...")
 		err = SendWebserver(*localPort, file, fileUUID)

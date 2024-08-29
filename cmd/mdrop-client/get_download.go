@@ -79,7 +79,7 @@ func GetPrompt(localPort int, uuid string, fileNameOpt string, isSingleFile bool
 			fileName = fileNameOpt
 		}
 	}
-	if fileStatus, _ := os.Stat(filePath+"/"+fileName); fileStatus != nil {
+	if fileStatus, _ := os.Stat(filePath + "/" + fileName); fileStatus != nil {
 		fmt.Print("There's duplicate file. Action? [(R)eplace/R(e)name/(C)ancel] [Default: R] -> ")
 		prompt, err := reader.ReadString('\n')
 		if err != nil {
@@ -90,7 +90,7 @@ func GetPrompt(localPort int, uuid string, fileNameOpt string, isSingleFile bool
 			internal.PrintErrorWithExit("sendPromptCancel", errors.New("Canceled by action"), 0)
 		}
 		if strings.ToLower(prompt) == "e" {
-			fmt.Print("Change filename ["+fileName+"]: ")
+			fmt.Print("Change filename [" + fileName + "]: ")
 			prompt, err = reader.ReadString('\n')
 			if err != nil {
 				internal.PrintErrorWithExit("sendPromptError", err, 1)
@@ -133,7 +133,7 @@ func GetDownload(localPort int, uuid string, fileName string, fileNameOpt string
 		filePath = fileNameOpt
 		fmt.Println("Changing working directory to", filePath)
 	}
-	filePath += "/"+fileName
+	filePath += "/" + fileName
 
 	// Create file
 	file, err := os.Create(filePath)

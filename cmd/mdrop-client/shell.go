@@ -72,11 +72,11 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 				errChan <- errors.New("Port full on server")
 			}
 
-            // Case: Invalid key
-            if strings.Contains(m, "Invalid key") {
+			// Case: Invalid key
+			if strings.Contains(m, "Invalid key") {
 				outputChan <- "Invalid key"
 				errChan <- errors.New("Invalid key on execution")
-            }
+			}
 		}
 	}()
 
@@ -112,4 +112,3 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 
 	return output, err
 }
-

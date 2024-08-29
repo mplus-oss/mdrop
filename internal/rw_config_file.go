@@ -13,8 +13,8 @@ var (
 )
 
 type ConfigSourceAuth struct {
-	Default			  int			`json:"default"`
-	ListConfiguration []ConfigFile  `json:"listConfig"`
+	Default           int          `json:"default"`
+	ListConfiguration []ConfigFile `json:"listConfig"`
 }
 
 type ConfigFile struct {
@@ -22,7 +22,7 @@ type ConfigFile struct {
 	Host  string `json:"host"`
 	Port  int    `json:"port"`
 	Proxy string `json:"proxy"`
-    Key   string `json:"key"`
+	Key   string `json:"key"`
 }
 
 func init() {
