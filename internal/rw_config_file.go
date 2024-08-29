@@ -36,23 +36,22 @@ func init() {
 	ConfigFileLocation += "/.mdrop"
 }
 
-func (c ConfigFile) WriteConfig() (err error) {
+func (c ConfigFile) WriteRawConfig() (conf string, err error) {
 	var config ConfigSourceAuth
 
-	fmt.Println("Writing config file...")
 	if CheckConfigFileExist() {
 		err = config.ParseConfig(&config)
 		if err != nil {
 			err = os.Remove(GetConfigPath())
 			if err != nil {
-				return err
+				return "", err
 			}
 		}
 	}
 
 	// Check if there's multiple configuration
 	if config.GetTunnelBasedInstanceName(c.Name) != -1 {
-		return errors.New("Multiple instance name")
+		return "", errors.New("Multiple instance name")
 	}
 
 	// Append config file
@@ -60,9 +59,19 @@ func (c ConfigFile) WriteConfig() (err error) {
 
 	strJsonByte, err := json.Marshal(config)
 	if err != nil {
+		return "", err
+	}
+	conf = base64.StdEncoding.EncodeToString(strJsonByte)
+	return conf, nil
+}
+
+func (c ConfigFile) WriteConfig() (err error) {
+	fmt.Println("Writing config file...")
+	strConfig, err := c.WriteRawConfig()
+	if err != nil {
 		return err
 	}
-	strConfig := base64.StdEncoding.EncodeToString(strJsonByte)
+
 	err = os.WriteFile(ConfigFileLocation, []byte(strConfig), 0644)
 	if err != nil {
 		return err

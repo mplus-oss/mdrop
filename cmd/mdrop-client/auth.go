@@ -24,6 +24,7 @@ func AuthCommand(args []string) {
 		list            = flag.Bool("list", false, "Get list of tunnel instance")
 		help            = flag.Bool("help", false, "Print this message")
 		deleteInstance  = flag.String("delete", "", "Delete tunnel instance")
+		raw             = flag.Bool("raw", false, "Print raw output of .mdrop file")
 	)
 	flag.Parse(args)
 
@@ -77,6 +78,15 @@ func AuthCommand(args []string) {
 	}
 
 	// Write config file
+	if *raw {
+		confString, err := config.WriteRawConfig()
+		if err != nil {
+			internal.PrintErrorWithExit("authWriteRawConfig", err, 1)
+		}
+		fmt.Println("\nCopy this secret below and paste it to ~/.mdrop")
+		fmt.Println(confString)
+		os.Exit(0)
+	}
 	err = config.WriteConfig()
 	if err != nil {
 		internal.PrintErrorWithExit("authWriteConfig", err, 1)
