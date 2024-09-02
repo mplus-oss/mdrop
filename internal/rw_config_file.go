@@ -36,7 +36,7 @@ func init() {
 
     configLocation := os.Getenv("MDROP_CONFIG")
     if configLocation != "" {
-        ConfigFileLocation += configLocation
+        ConfigFileLocation = configLocation
     } else {
         ConfigFileLocation += "/.mdrop"
     }
