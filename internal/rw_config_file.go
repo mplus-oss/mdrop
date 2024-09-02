@@ -33,7 +33,13 @@ func init() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	ConfigFileLocation += "/.mdrop"
+
+    configLocation := os.Getenv("MDROP_CONFIG")
+    if configLocation != "" {
+        ConfigFileLocation = configLocation
+    } else {
+        ConfigFileLocation += "/.mdrop"
+    }
 }
 
 func (c ConfigFile) WriteRawConfig(isReplace bool) (conf string, err error) {
