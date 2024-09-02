@@ -7,11 +7,11 @@ import (
 )
 
 type SSHParameter struct {
-	IsRemote	bool
-	LocalPort	int
-	RemotePort	int
-	ConfigFile	ConfigFile
-	Command		[]string
+	IsRemote   bool
+	LocalPort  int
+	RemotePort int
+	ConfigFile ConfigFile
+	Command    []string
 }
 
 func (s SSHParameter) GenerateConnectSSHArgs() string {
@@ -26,11 +26,11 @@ func (s SSHParameter) GenerateConnectSSHArgs() string {
 	}
 	args = append(args, s.Command...)
 	s.GenerateProxyArgs(&args)
-    if s.ConfigFile.Key != "" {
-        args = append(args, s.ConfigFile.Key)
-    }
+	if s.ConfigFile.Key != "" {
+		args = append(args, s.ConfigFile.Key)
+	}
 
-	return "ssh "+strings.Join(args, " ")
+	return "ssh " + strings.Join(args, " ")
 }
 
 func (s SSHParameter) GenerateRemoteSSHArgs() string {
@@ -57,11 +57,11 @@ func (s SSHParameter) GenerateRemoteSSHArgs() string {
 		)
 	}
 	s.GenerateProxyArgs(&args)
-    if s.ConfigFile.Key != "" {
-        args = append(args, s.ConfigFile.Key)
-    }
+	if s.ConfigFile.Key != "" {
+		args = append(args, s.ConfigFile.Key)
+	}
 
-	return "ssh "+strings.Join(args, " ")
+	return "ssh " + strings.Join(args, " ")
 }
 
 func (s SSHParameter) GenerateProxyArgs(args *[]string) {
