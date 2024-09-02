@@ -6,9 +6,9 @@ import (
 )
 
 type TokenTransferJSON struct {
-	Host		string	  `json:"host"`
-	RemotePort	int		  `json:"remotePort"`
-	Files		[]string  `json:"files"`
+	Host       string   `json:"host"`
+	RemotePort int      `json:"remotePort"`
+	Files      []string `json:"files"`
 }
 
 func (t TokenTransferJSON) GenerateToken() (token string, err error) {
