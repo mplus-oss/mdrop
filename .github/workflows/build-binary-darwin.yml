@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ inputs.runner }}
+    runs-on: macos-latest
     container:
       image: docker.io/library/golang:alpine
     steps:
