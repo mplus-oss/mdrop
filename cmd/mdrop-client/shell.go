@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -24,6 +25,7 @@ func KillShell(pid int) error {
 func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, err error) {
 	errChan := make(chan error, 0)
 	outputChan := make(chan string, 0)
+	debugEnv := os.Getenv("MDROP_SSH_DEBUG")
 
 	args := ""
 	if isTunnel {
@@ -32,6 +34,9 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 		args = s.GenerateConnectSSHArgs()
 	}
 
+	if debugEnv == "1" {
+		fmt.Println(args)
+	}
 	cmd := exec.Command("sh", "-c", args)
 	stdout, err := cmd.StdoutPipe()
 	stderr, err := cmd.StderrPipe()
@@ -45,6 +50,10 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 		s.Split(bufio.ScanLines)
 		for s.Scan() {
 			m := s.Text()
+			if debugEnv == "1" {
+				fmt.Println(m)
+			}
+
 			// Case: If connected
 			if strings.Contains(m, "Pong!") {
 				outputChan <- m
@@ -62,6 +71,12 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 				outputChan <- "Not found"
 				errChan <- errors.New("Port full on server")
 			}
+
+			// Case: Invalid key
+			if strings.Contains(m, "Invalid key") {
+				outputChan <- "Invalid key"
+				errChan <- errors.New("Invalid key on execution")
+			}
 		}
 	}()
 
@@ -70,6 +85,10 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 		s.Split(bufio.ScanLines)
 		for s.Scan() {
 			m := s.Text()
+			if debugEnv == "1" {
+				fmt.Println(m)
+			}
+
 			// False flag #1
 			if strings.Contains(m, "chdir") || strings.Contains(m, "Permanently added") {
 				continue
@@ -87,10 +106,9 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 		}
 	}()
 
+	cmd.Wait()
 	output = <-outputChan
 	err = <-errChan
-	cmd.Wait()
 
 	return output, err
 }
-

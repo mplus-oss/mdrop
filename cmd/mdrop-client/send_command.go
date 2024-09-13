@@ -37,6 +37,9 @@ func SendCommand(args []string) {
 	if err != nil {
 		internal.PrintErrorWithExit("sendParseConfigError", err, 1)
 	}
+	if len(authFile.ListConfiguration) == 0 {
+		internal.PrintErrorWithExit("getConfigFileEmpty", errors.New("Config file empty. Please log in using `mdrop auth` before executing this command."), 1)
+	}
 	config := authFile.ListConfiguration[authFile.Default]
 
 	// Get Port from Tunnel
@@ -88,16 +91,16 @@ func SendCommand(args []string) {
 
 		// Print token
 		token, err := TokenTransferJSON{
-			Host: config.Host,
+			Host:       config.Host,
 			RemotePort: remotePort,
-			Files: fileUUID,
+			Files:      fileUUID,
 		}.GenerateToken()
 		if err != nil {
 			errChan <- err
 		}
 
 		fmt.Print("\nPlease copy this token to the receiver.")
-		fmt.Print("\nToken: "+token+"\n\n")
+		fmt.Print("\nToken: " + token + "\n\n")
 
 		fmt.Println("Spawning webserver...")
 		err = SendWebserver(*localPort, file, fileUUID)

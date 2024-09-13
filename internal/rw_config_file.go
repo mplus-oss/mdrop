@@ -13,8 +13,8 @@ var (
 )
 
 type ConfigSourceAuth struct {
-	Default			  int			`json:"default"`
-	ListConfiguration []ConfigFile  `json:"listConfig"`
+	Default           int          `json:"default"`
+	ListConfiguration []ConfigFile `json:"listConfig"`
 }
 
 type ConfigFile struct {
@@ -22,6 +22,7 @@ type ConfigFile struct {
 	Host  string `json:"host"`
 	Port  int    `json:"port"`
 	Proxy string `json:"proxy"`
+	Key   string `json:"key"`
 }
 
 func init() {
@@ -32,32 +33,64 @@ func init() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	ConfigFileLocation += "/.mdrop"
+
+    configLocation := os.Getenv("MDROP_CONFIG")
+    if configLocation != "" {
+        ConfigFileLocation = configLocation
+    } else {
+        ConfigFileLocation += "/.mdrop"
+    }
 }
 
-func (c ConfigFile) WriteConfig() (err error) {
+func (c ConfigFile) WriteRawConfig(isReplace bool) (conf string, err error) {
 	var config ConfigSourceAuth
 
-	fmt.Println("Writing config file...")
-	if CheckConfigFileExist() {
-		err = config.ParseConfig(&config)
-		if err != nil {
-			err = os.Remove(GetConfigPath())
+	if !isReplace {
+		if CheckConfigFileExist() {
+			err = config.ParseConfig(&config)
 			if err != nil {
-				return err
+				err = os.Remove(GetConfigPath())
+				if err != nil {
+					return "", err
+				}
 			}
 		}
 	}
 
 	// Check if there's multiple configuration
 	if config.GetTunnelBasedInstanceName(c.Name) != -1 {
-		return errors.New("Multiple instance name")
+		return "", errors.New("Multiple instance name")
 	}
 
 	// Append config file
 	config.ListConfiguration = append(config.ListConfiguration, c)
 
 	strJsonByte, err := json.Marshal(config)
+	if err != nil {
+		return "", err
+	}
+	conf = base64.StdEncoding.EncodeToString(strJsonByte)
+	return conf, nil
+}
+
+func (c ConfigFile) WriteConfig(isReplace bool) (err error) {
+	fmt.Println("Writing config file...")
+	strConfig, err := c.WriteRawConfig(isReplace)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(ConfigFileLocation, []byte(strConfig), 0644)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Config file is saved on", ConfigFileLocation)
+	return nil
+}
+
+func (c ConfigSourceAuth) WriteConfig() (err error) {
+	strJsonByte, err := json.Marshal(c)
 	if err != nil {
 		return err
 	}

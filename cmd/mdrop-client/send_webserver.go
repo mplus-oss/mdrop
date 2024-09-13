@@ -26,7 +26,7 @@ var senderErrorChan chan error = make(chan error)
 
 func SendWebserver(localPort int, file []string, uuid []string) (err error) {
 	totalFile = len(file)
-	server.Addr = ":"+strconv.Itoa(localPort)
+	server.Addr = ":" + strconv.Itoa(localPort)
 
 	for i, _ := range file {
 		// Check mimetype
@@ -35,13 +35,13 @@ func SendWebserver(localPort int, file []string, uuid []string) (err error) {
 			senderErrorChan <- internal.CustomizeError("receiveMimeType", err)
 		}
 
-		http.Handle("/"+uuid[i], http.HandlerFunc(func (w http.ResponseWriter, request *http.Request) {
+		http.Handle("/"+uuid[i], http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 			receiveSendWebserver(w, request, file[i], mimeType.String())
 		}))
-		http.Handle("/checksum-"+uuid[i], http.HandlerFunc(func (w http.ResponseWriter, request *http.Request) {
+		http.Handle("/checksum-"+uuid[i], http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 			checksumSendWebserver(w, request, file[i])
 		}))
-		http.Handle("/verify-"+uuid[i], http.HandlerFunc(func (w http.ResponseWriter, request *http.Request) {
+		http.Handle("/verify-"+uuid[i], http.HandlerFunc(func(w http.ResponseWriter, request *http.Request) {
 			promptSendWebserver(w, request, file[i], mimeType.String())
 		}))
 	}
@@ -58,14 +58,14 @@ func SendWebserver(localPort int, file []string, uuid []string) (err error) {
 
 	err = <-senderErrorChan
 
-    shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 10*time.Second)
-    defer shutdownRelease()
+	shutdownCtx, shutdownRelease := context.WithTimeout(context.Background(), 10*time.Second)
+	defer shutdownRelease()
 
 	fmt.Println("Gracefully shutdown server...")
 	err = server.Shutdown(shutdownCtx)
-    if err != nil {
+	if err != nil {
 		return err
-    }
+	}
 	return nil
 }
 
@@ -130,7 +130,6 @@ func receiveSendWebserver(w http.ResponseWriter, request *http.Request, filePath
 	if err != nil {
 		senderErrorChan <- internal.CustomizeError("receiveOpenFileStat", err)
 	}
-
 
 	w.Header().Set("Transfer-Encoding", "identity")
 	w.Header().Set(

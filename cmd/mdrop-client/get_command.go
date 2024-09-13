@@ -16,9 +16,9 @@ func GetCommand(args []string) {
 
 	flag := flag.NewFlagSet("mdrop get", flag.ExitOnError)
 	var (
-		help		= flag.Bool("help", false, "Print this message")
-		fileNameOpt = flag.String("output", "", "Set filename output")
-		localPort	= flag.Int("local-port", 6000, "Specified sender port remoted on local")
+		help        = flag.Bool("help", false, "Print this message")
+		fileNameOpt = flag.String("output", "", "Set file or directory output")
+		localPort   = flag.Int("local-port", 6000, "Specified sender port remoted on local")
 	)
 	flag.Parse(args)
 
@@ -41,6 +41,9 @@ func GetCommand(args []string) {
 	err = authFile.ParseConfig(&authFile)
 	if err != nil {
 		internal.PrintErrorWithExit("getParseConfigError", err, 1)
+	}
+	if len(authFile.ListConfiguration) == 0 {
+		internal.PrintErrorWithExit("getConfigFileEmpty", errors.New("Config file empty. Please log in using `mdrop auth` before executing this command."), 1)
 	}
 	config := authFile.ListConfiguration[authFile.Default]
 	if sender.Host != config.Host {
@@ -68,11 +71,12 @@ func GetCommand(args []string) {
 	GetTcpReadyConnect(*localPort)
 
 	// Downloading file
+	isSingleFile := len(sender.Files) < 2
 	for _, uuid := range sender.Files {
 		// No error checking needed.
-		fileName := GetPrompt(*localPort, uuid, *fileNameOpt)
+		fileName := GetPrompt(*localPort, uuid, *fileNameOpt, isSingleFile)
 		checksum := GetChecksum(*localPort, uuid)
-		filePath := GetDownload(*localPort, uuid, fileName)
+		filePath := GetDownload(*localPort, uuid, fileName, *fileNameOpt, isSingleFile)
 
 		// Check checksum
 		fmt.Println("Checking checksum...")
