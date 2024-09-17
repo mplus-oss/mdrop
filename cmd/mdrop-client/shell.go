@@ -54,24 +54,22 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 				fmt.Println(m)
 			}
 
+			// NOTE: There's some reasone we're keeping this code. But we'll see it later.
 			// Case: If connected
 			if strings.Contains(m, "Pong!") {
 				outputChan <- m
 				errChan <- nil
 			}
-
 			// Case: If port found
 			if strings.Contains(m, "Get-Port-Found") {
 				outputChan <- m
 				errChan <- nil
 			}
-
 			// Case: If port full
 			if strings.Contains(m, "Get-Port-Closed") && strings.Contains(m, "Not found") {
 				outputChan <- "Not found"
 				errChan <- errors.New("Port full on server")
 			}
-
 			// Case: Invalid key
 			if strings.Contains(m, "Invalid key") {
 				outputChan <- "Invalid key"
@@ -93,20 +91,30 @@ func StartShellTunnel(s internal.SSHParameter, isTunnel bool) (output string, er
 			if strings.Contains(m, "chdir") || strings.Contains(m, "Permanently added") {
 				continue
 			}
-			if strings.Contains(m, "remote port forwarding failed") {
-				errChan <- errors.New("Duplicate remote on bridge server")
-			}
-			if strings.Contains(m, "EXCEPTION") {
-				errChan <- errors.New("Error from Server: " + m)
-			}
-			if strings.Contains(m, "exec") && strings.Contains(m, "not found") {
-				errChan <- errors.New("Proxy app not found. Did you install it?")
-			}
+
+			// TODO: Remove it for testing. If stable, remove this.
+			//if strings.Contains(m, "remote port forwarding failed") {
+			//	errChan <- errors.New("Duplicate remote on bridge server")
+			//}
+			//if strings.Contains(m, "EXCEPTION") {
+			//	errChan <- errors.New("Error from Server: " + m)
+			//}
+			//if strings.Contains(m, "exec") && strings.Contains(m, "not found") {
+			//	errChan <- errors.New("Proxy app not found. Did you install it?")
+			//}
 			fmt.Println(m)
 		}
 	}()
 
-	cmd.Wait()
+	err = cmd.Wait()
+
+	// Invoke this if there's an error
+	if err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			outputChan <- "Exit with error code " + strconv.Itoa(exitErr.ExitCode())
+			errChan <- exitErr
+		}
+	}
 	output = <-outputChan
 	err = <-errChan
 
