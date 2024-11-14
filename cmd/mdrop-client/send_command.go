@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/atotto/clipboard"
 	"github.com/google/uuid"
 	"github.com/mplus-oss/mdrop/internal"
 )
@@ -101,6 +102,12 @@ func SendCommand(args []string) {
 
 		fmt.Print("\nPlease copy this token to the receiver.")
 		fmt.Print("\nToken: " + token + "\n\n")
+
+		fmt.Println("Token copied to clipboard!")
+		err = clipboard.WriteAll(token)
+		if err != nil {
+			fmt.Println("Warning: Failed to copy token to clipboard.")
+		}
 
 		fmt.Println("Spawning webserver...")
 		err = SendWebserver(*localPort, file, fileUUID)

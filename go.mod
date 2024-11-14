@@ -3,6 +3,7 @@ module github.com/mplus-oss/mdrop
 go 1.22.5
 
 require (
+	github.com/atotto/clipboard v0.1.4
 	github.com/gabriel-vasile/mimetype v1.4.5
 	github.com/google/uuid v1.6.0
 	github.com/schollz/progressbar/v3 v3.14.4
