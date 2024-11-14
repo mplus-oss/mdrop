@@ -35,8 +35,8 @@ func SendCommand(args []string) {
 	}
 
 	// Parsing glob
-	for i := 0; i < len(filesFromArgs); i++ {
-		globMatch, err := filepath.Glob(files[i])
+	for _, fileArg := range filesFromArgs {
+		globMatch, err := filepath.Glob(fileArg)
 		if err != nil {
 			internal.PrintErrorWithExit("sendGlobError", err, 1)
 		}

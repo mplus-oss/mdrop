@@ -13,6 +13,29 @@ import (
 	"github.com/schollz/progressbar/v3"
 )
 
+func GetMetadata(localPort int, uuid string) (filename string, mimetype string) {
+	client := http.Client{}
+
+	resp, err := client.Get(
+		fmt.Sprintf("http://localhost:%v/verify-%v", localPort, uuid),
+	)
+	if err != nil {
+		internal.PrintErrorWithExit("sendHttpClientPrompt", err, 1)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = internal.CustomizeError("sendHttpClientResponsePrompt", errors.New("Prompt response error"))
+		internal.PrintErrorWithExit("sendHttpClientResponsePrompt", err, 1)
+	}
+	fileNameBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		internal.PrintErrorWithExit("sendHttpClientReadPrompt", err, 1)
+	}
+	fileName := string(fileNameBytes)
+    return fileName, string(resp.Header.Get("X-Mime-Type"))
+}
+
 func GetChecksum(localPort int, uuid string) string {
 	client := http.Client{}
 	resp, err := client.Get(
@@ -33,32 +56,15 @@ func GetChecksum(localPort int, uuid string) string {
 	return string(checksumBytes)
 }
 
-func GetPrompt(localPort int, uuid string, fileNameOpt string, isSingleFile bool, isSkipPrompt bool) (filePath string) {
+func GetPrompt(localPort int, uuid string, fileNameOpt string, isSingleFile bool, isSkipPrompt *bool) (filePath string) {
 	reader := bufio.NewReader(os.Stdin)
-	client := http.Client{}
-
-	resp, err := client.Get(
-		fmt.Sprintf("http://localhost:%v/verify-%v", localPort, uuid),
-	)
-	if err != nil {
-		internal.PrintErrorWithExit("sendHttpClientPrompt", err, 1)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		err = internal.CustomizeError("sendHttpClientResponsePrompt", errors.New("Prompt response error"))
-		internal.PrintErrorWithExit("sendHttpClientResponsePrompt", err, 1)
-	}
-	fileNameBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		internal.PrintErrorWithExit("sendHttpClientReadPrompt", err, 1)
-	}
-	fileName := string(fileNameBytes)
+    err := errors.New("")
+    fileName, fileMimetype := GetMetadata(localPort, uuid)
 
 	// Ask client if they wanna download it or not
-	fmt.Println("\nFile found:", fileName, fmt.Sprintf("[%v]", resp.Header.Get("X-Mime-Type")))
-    if !isSkipPrompt {
-        fmt.Print("Download? [(Y)es/(N)o] [Default: Y] -> ")
+	fmt.Println("\nFile found:", fileName, fmt.Sprintf("[%v]", fileMimetype))
+    if !*isSkipPrompt {
+        fmt.Print("Download? [(Y)es/(N)o/(A)ll] [Default: Y] -> ")
         prompt, err := reader.ReadString('\n')
         if err != nil {
             internal.PrintErrorWithExit("sendPromptError", err, 1)
@@ -66,6 +72,9 @@ func GetPrompt(localPort int, uuid string, fileNameOpt string, isSingleFile bool
         prompt = strings.Replace(prompt, "\n", "", -1)
         if strings.ToLower(prompt) == "n" {
             internal.PrintErrorWithExit("sendPromptCancel", errors.New("Canceled by action"), 0)
+        }
+        if strings.ToLower(prompt) == "a" {
+            *isSkipPrompt = true
         }
     }
 
