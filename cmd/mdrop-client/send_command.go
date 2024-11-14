@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -25,11 +26,22 @@ func SendCommand(args []string) {
 	)
 	flag.Parse(args)
 
-	file := flag.Args()
-	if *help || len(file) == 0 {
+	files := []string{}
+	filesFromArgs := flag.Args()
+	if *help || len(filesFromArgs) == 0 {
 		fmt.Println("Command: mdrop send [options] <file1> [file2] [file...]")
 		flag.Usage()
 		os.Exit(1)
+	}
+
+	// Parsing glob
+	for i := 0; i < len(filesFromArgs); i++ {
+		globMatch, err := filepath.Glob(files[i])
+		if err != nil {
+			internal.PrintErrorWithExit("sendGlobError", err, 1)
+		}
+
+		files = append(files, globMatch...)
 	}
 
 	// Parse Config
@@ -86,7 +98,7 @@ func SendCommand(args []string) {
 	go func() {
 		fileUUID := []string{}
 
-		for range file {
+		for range files {
 			fileUUID = append(fileUUID, uuid.New().String())
 		}
 
@@ -110,7 +122,7 @@ func SendCommand(args []string) {
 		}
 
 		fmt.Println("Spawning webserver...")
-		err = SendWebserver(*localPort, file, fileUUID)
+		err = SendWebserver(*localPort, files, fileUUID)
 		errChan <- err
 	}()
 
