@@ -19,6 +19,7 @@ func GetCommand(args []string) {
 		help        = flag.Bool("help", false, "Print this message")
 		fileNameOpt = flag.String("output", "", "Set file or directory output")
 		localPort   = flag.Int("local-port", 6000, "Specified sender port remoted on local")
+        skipPrompt  = flag.Bool("skip-prompt", false, "Skip prompt")
 	)
 	flag.Parse(args)
 
@@ -74,7 +75,7 @@ func GetCommand(args []string) {
 	isSingleFile := len(sender.Files) < 2
 	for _, uuid := range sender.Files {
 		// No error checking needed.
-		fileName := GetPrompt(*localPort, uuid, *fileNameOpt, isSingleFile)
+		fileName := GetPrompt(*localPort, uuid, *fileNameOpt, isSingleFile, *skipPrompt)
 		checksum := GetChecksum(*localPort, uuid)
 		filePath := GetDownload(*localPort, uuid, fileName, *fileNameOpt, isSingleFile)
 

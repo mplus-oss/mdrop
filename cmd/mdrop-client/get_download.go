@@ -33,7 +33,7 @@ func GetChecksum(localPort int, uuid string) string {
 	return string(checksumBytes)
 }
 
-func GetPrompt(localPort int, uuid string, fileNameOpt string, isSingleFile bool) (filePath string) {
+func GetPrompt(localPort int, uuid string, fileNameOpt string, isSingleFile bool, isSkipPrompt bool) (filePath string) {
 	reader := bufio.NewReader(os.Stdin)
 	client := http.Client{}
 
@@ -57,15 +57,17 @@ func GetPrompt(localPort int, uuid string, fileNameOpt string, isSingleFile bool
 
 	// Ask client if they wanna download it or not
 	fmt.Println("\nFile found:", fileName, fmt.Sprintf("[%v]", resp.Header.Get("X-Mime-Type")))
-	fmt.Print("Download? [(Y)es/(N)o] [Default: Y] -> ")
-	prompt, err := reader.ReadString('\n')
-	if err != nil {
-		internal.PrintErrorWithExit("sendPromptError", err, 1)
-	}
-	prompt = strings.Replace(prompt, "\n", "", -1)
-	if strings.ToLower(prompt) == "n" {
-		internal.PrintErrorWithExit("sendPromptCancel", errors.New("Canceled by action"), 0)
-	}
+    if !isSkipPrompt {
+        fmt.Print("Download? [(Y)es/(N)o] [Default: Y] -> ")
+        prompt, err := reader.ReadString('\n')
+        if err != nil {
+            internal.PrintErrorWithExit("sendPromptError", err, 1)
+        }
+        prompt = strings.Replace(prompt, "\n", "", -1)
+        if strings.ToLower(prompt) == "n" {
+            internal.PrintErrorWithExit("sendPromptCancel", errors.New("Canceled by action"), 0)
+        }
+    }
 
 	// Check if there's duplicate file
 	filePath, err = os.Getwd()
@@ -130,8 +132,10 @@ func GetDownload(localPort int, uuid string, fileName string, fileNameOpt string
 		internal.PrintErrorWithExit("sendFileWorkDir", err, 1)
 	}
 	if !isSingleFile {
-		filePath = fileNameOpt
-		fmt.Println("Changing working directory to", filePath)
+        if fileNameOpt != "" {
+            filePath = fileNameOpt
+            fmt.Println("Changing working directory to", filePath)
+        }
 	}
 	filePath += "/" + fileName
 
