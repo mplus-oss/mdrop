@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/atotto/clipboard"
 	"github.com/google/uuid"
 	"github.com/mplus-oss/mdrop/internal"
 )
@@ -24,11 +25,16 @@ func SendCommand(args []string) {
 	)
 	flag.Parse(args)
 
-	file := flag.Args()
-	if *help || len(file) == 0 {
+	files := flag.Args()
+	if *help || len(files) == 0 {
 		fmt.Println("Command: mdrop send [options] <file1> [file2] [file...]")
 		flag.Usage()
 		os.Exit(1)
+	}
+	// Parsing glob
+	files, err = ParseGlob(files)
+	if err != nil {
+		internal.PrintErrorWithExit("sendParseGlobError", err, 1)
 	}
 
 	// Parse Config
@@ -85,7 +91,7 @@ func SendCommand(args []string) {
 	go func() {
 		fileUUID := []string{}
 
-		for range file {
+		for range files {
 			fileUUID = append(fileUUID, uuid.New().String())
 		}
 
@@ -102,8 +108,14 @@ func SendCommand(args []string) {
 		fmt.Print("\nPlease copy this token to the receiver.")
 		fmt.Print("\nToken: " + token + "\n\n")
 
+		fmt.Println("Token copied to clipboard!")
+		err = clipboard.WriteAll(token)
+		if err != nil {
+			fmt.Println("Warning: Failed to copy token to clipboard.")
+		}
+
 		fmt.Println("Spawning webserver...")
-		err = SendWebserver(*localPort, file, fileUUID)
+		err = SendWebserver(*localPort, files, fileUUID)
 		errChan <- err
 	}()
 
