@@ -71,11 +71,24 @@ func GetCommand(args []string) {
 	fmt.Println("Connecting to sender...")
 	GetTcpReadyConnect(*localPort)
 
-	// Downloading file
+    // Indexing file
 	isSingleFile := len(sender.Files) < 2
+    if !isSingleFile {
+        fmt.Print("\nDetected multiple files:")
+        for i, uuid := range sender.Files {
+            filename, mimetype := GetMetadata(*localPort, uuid)
+            fmt.Printf("\n    [%v] %v (%v)", i+1, filename, mimetype)
+        }
+        fmt.Print("\n")
+    }
+
+    // Variable for passing copy of skipping prompt
+    isSkipPrompt := *skipPrompt
+
+	// Downloading file
 	for _, uuid := range sender.Files {
 		// No error checking needed.
-		fileName := GetPrompt(*localPort, uuid, *fileNameOpt, isSingleFile, *skipPrompt)
+		fileName := GetPrompt(*localPort, uuid, *fileNameOpt, isSingleFile, &isSkipPrompt)
 		checksum := GetChecksum(*localPort, uuid)
 		filePath := GetDownload(*localPort, uuid, fileName, *fileNameOpt, isSingleFile)
 
