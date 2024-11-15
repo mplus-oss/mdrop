@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -26,22 +25,16 @@ func SendCommand(args []string) {
 	)
 	flag.Parse(args)
 
-	files := []string{}
-	filesFromArgs := flag.Args()
-	if *help || len(filesFromArgs) == 0 {
+	files := flag.Args()
+	if *help || len(files) == 0 {
 		fmt.Println("Command: mdrop send [options] <file1> [file2] [file...]")
 		flag.Usage()
 		os.Exit(1)
 	}
-
 	// Parsing glob
-	for _, fileArg := range filesFromArgs {
-		globMatch, err := filepath.Glob(fileArg)
-		if err != nil {
-			internal.PrintErrorWithExit("sendGlobError", err, 1)
-		}
-
-		files = append(files, globMatch...)
+	files, err = ParseGlob(files)
+	if err != nil {
+		internal.PrintErrorWithExit("sendParseGlobError", err, 1)
 	}
 
 	// Parse Config
