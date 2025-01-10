@@ -31,8 +31,8 @@ jobs:
       make_command: ${{ matrix.make_command }}
       use_artifacts: true
       binary_name: ${{ matrix.binary_name }}
-      binary_os: ${{ matrix.binary_name }}
-      binary_arch: ${{ matrix.binary_name }}
+      binary_os: ${{ matrix.binary_os }}
+      binary_arch: ${{ matrix.binary_arch }}
     secrets: inherit
 
   artifact-upload:
@@ -47,6 +47,6 @@ jobs:
     uses: ./.github/workflows/reusable-upload-s3.yml
     with:
       binary_name: ${{ matrix.binary_name }}
-      binary_os: ${{ matrix.binary_name }}
-      binary_arch: ${{ matrix.binary_name }}
+      binary_os: ${{ matrix.binary_os }}
+      binary_arch: ${{ matrix.binary_arch }}
     secrets: inherit
