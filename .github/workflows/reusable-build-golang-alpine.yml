@@ -12,6 +12,12 @@ on:
       binary_name:
         type: string
         default: mdrop
+      binary_os:
+        type: string
+        default: linux
+      binary_arch:
+        type: string
+        default: amd64
 
 jobs:
   build:
@@ -28,10 +34,10 @@ jobs:
           apk update
           apk add make gcc musl-dev
       - name: Build app
-        run: make ${{ inputs.make_command }}
+        run: make BINARY_SUFFIX=-${{ inputs.binary_os }}-${{ inputs.binary_arch }} ${{ inputs.make_command }}
       - name: Upload artifacts
         if: ${{ inputs.use_artifacts }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.binary_name }}-build-artifact-${{ github.sha }}
-          path: ./${{ inputs.binary_name }}
+          name: ${{ inputs.binary_name }}-${{ inputs.binary_os }}-${{ inputs.binary_arch }}-artifact
+          path: ./${{ inputs.binary_name }}-${{ inputs.binary_os }}-${{ inputs.binary_arch }}

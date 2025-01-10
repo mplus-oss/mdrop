@@ -20,25 +20,33 @@ jobs:
     needs: [test-build]
     strategy:
       matrix:
-        make_command: [build-client, build-tunnel]
+        make_command: [build-client]
         include:
           - make_command: build-client
             binary_name: mdrop
-          - make_command: build-tunnel
-            binary_name: mdrop-tunnel
+            binary_os: linux
+            binary_arch: amd64
     uses: ./.github/workflows/reusable-build-golang-alpine.yml
     with:
       make_command: ${{ matrix.make_command }}
       use_artifacts: true
       binary_name: ${{ matrix.binary_name }}
+      binary_os: ${{ matrix.binary_name }}
+      binary_arch: ${{ matrix.binary_name }}
     secrets: inherit
 
   artifact-upload:
     needs: [artifact-build]
     strategy:
       matrix:
-        binary_name: [mdrop, mdrop-tunnel]
+        binary_name: [mdrop]
+        include:
+          - binary_name: mdrop
+            binary_os: linux
+            binary_arch: amd64
     uses: ./.github/workflows/reusable-upload-s3.yml
     with:
       binary_name: ${{ matrix.binary_name }}
+      binary_os: ${{ matrix.binary_name }}
+      binary_arch: ${{ matrix.binary_name }}
     secrets: inherit
